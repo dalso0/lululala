@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>늘곰 요원 본부</title>
+<meta name="description" content="오늘도 내일도 우리 모두 그냥 룰루랄라. 늘곰 요원 본부에 오신 걸 환영해요.">
+<meta name="theme-color" content="#fbf5e5">
+<meta name="apple-mobile-web-app-title" content="늘곰 본부">
+<meta property="og:title" content="늘곰 요원 본부">
+<meta property="og:description" content="오늘도 내일도 우리 모두 그냥 ♪ 룰루랄라 ♫">
+<meta property="og:image" content="img/card.jpg">
+<link rel="icon" type="image/png" href="img/agent.png">
+<link rel="apple-touch-icon" href="img/agent.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Gowun+Dodum&display=swap">
+<style>
+:root{
+  --bg:#fbf5e5; --paper:#fffdf6; --ink:#3b2b22; --muted:#8a7868; --line:#e6dcc8;
+  --tape:#d9c3a0; --sage:#7f9a7a; --sage-soft:#e8eee3; --fur:#c98f55; --heart:#d9675b; --gold:#e3b23c;
+  --hand:"Gaegu","Gowun Dodum",system-ui,sans-serif;
+  --body:"Gowun Dodum",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.7;
+  padding:max(14px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(28px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+.wrap{max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1,h2,h3{font-family:var(--hand);font-weight:700;line-height:1.15;margin:0}
+h2{font-size:24px}
+h3{font-size:20px}
+p{margin:0}
+button,input{font:inherit}
+button{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:8px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:disabled{opacity:.55;cursor:default}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--sage);outline-offset:2px}
+.hide{display:none!important}
+
+/* header */
+.head{display:flex;align-items:center;gap:12px;padding-top:4px}
+.head img{width:88px;height:88px;flex:none;border-radius:50%;background:var(--bg)}
+.head .t{font-family:var(--hand);font-size:30px;font-weight:700;line-height:1.05}
+.head .s{font-size:13px;color:var(--muted)}
+.tape{display:inline-block;background:var(--tape);color:var(--ink);font-family:ui-monospace,Menlo,monospace;font-size:10.5px;letter-spacing:.14em;padding:2px 10px;transform:rotate(-2deg);opacity:.9;margin-bottom:4px}
+
+/* hero card */
+.hero{border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#faf3e1}
+.hero img{display:block;width:100%;height:auto}
+
+.counters{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.counter{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.counter .n{font-family:var(--hand);font-size:34px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.counter .l{font-size:12.5px;color:var(--muted);margin-top:2px}
+
+.card{position:relative;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.card .lab{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;letter-spacing:.14em;color:var(--sage)}
+.card .tape-sm{position:absolute;top:-9px;left:50%;width:74px;height:18px;margin-left:-37px;background:var(--tape);opacity:.85;transform:rotate(3deg);pointer-events:none}
+.song{font-family:var(--hand);font-size:26px;font-weight:700;line-height:1.15;word-break:keep-all}
+.song small{display:block;font-family:var(--body);font-size:13.5px;font-weight:400;color:var(--muted);margin-top:2px}
+.note{font-size:14.5px;color:#5a4a3e}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--ink);border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:8px 16px}
+.btn.primary{background:var(--sage);border-color:var(--sage);color:#fff}
+.heart{display:inline-flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums}
+.heart[aria-pressed="true"]{background:var(--heart);border-color:var(--heart);color:#fff}
+@media (prefers-reduced-motion:no-preference){
+  .bump{animation:bump .35s ease}
+  @keyframes bump{50%{transform:scale(1.14)}}
+  .pop{animation:pop .5s cubic-bezier(.2,1.4,.4,1)}
+  @keyframes pop{0%{transform:scale(.3);opacity:0}100%{transform:scale(1);opacity:1}}
+}
+
+.moods{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.moods button{border-radius:12px;padding:8px 0;display:flex;flex-direction:column;align-items:center;font-size:12.5px;gap:1px;line-height:1.3}
+.moods button span{font-size:24px}
+.moods button[aria-pressed="true"]{border-color:var(--sage);background:var(--sage-soft);box-shadow:inset 0 0 0 1px var(--sage)}
+.bars{display:flex;flex-direction:column;gap:4px;font-size:12.5px}
+.bar{display:grid;grid-template-columns:40px 1fr 38px;gap:6px;align-items:center}
+.bar i{display:block;height:9px;border-radius:5px;background:var(--sage);min-width:2px;transition:width .4s}
+.bar .track{background:var(--bg);border-radius:5px}
+.bar .num{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+
+form.row{gap:8px}
+input[type=text],input[type=password],input[inputmode=numeric]{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:9px 12px;min-width:0;flex:1;font-size:16px}
+.ok{color:var(--sage);font-size:14px}
+.bad{color:var(--heart);font-size:14px}
+
+/* stamps */
+.stamps{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.stamp{aspect-ratio:1;border:2px dashed var(--line);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:var(--hand);font-size:13px;color:var(--muted);line-height:1.1;background:var(--bg);overflow:hidden}
+.stamp.on{border:2px solid var(--fur);background:#fff3df;color:var(--ink)}
+.stamp.on img{width:88%;height:88%;object-fit:contain}
+.stamp.now{border-color:var(--sage)}
+
+/* voucher */
+.voucher{border:2px solid var(--ink);border-radius:16px;padding:16px;background:#fff;display:flex;flex-direction:column;gap:10px;position:relative}
+.voucher .big{font-family:var(--hand);font-size:30px;font-weight:700;line-height:1.1}
+.clock{font-family:ui-monospace,Menlo,monospace;font-size:34px;letter-spacing:.04em;font-variant-numeric:tabular-nums;line-height:1}
+.daily{display:flex;align-items:center;gap:10px}
+.swatch{width:46px;height:46px;border-radius:12px;border:2px solid var(--ink);flex:none}
+.word{font-family:var(--hand);font-size:28px;font-weight:700;line-height:1}
+.voucher.done{background:#f1efe8;border-style:dashed}
+.badge{display:inline-block;background:var(--gold);color:#3b2b22;font-family:var(--hand);font-weight:700;font-size:16px;padding:2px 12px;border-radius:999px;transform:rotate(-3deg)}
+.pin{display:flex;flex-direction:column;gap:8px;border-top:1px dashed var(--line);padding-top:10px}
+.pin .cap{font-size:12.5px;color:var(--muted)}
+
+.stone{display:flex;gap:12px;align-items:center}
+.stone img{width:76px;height:76px;flex:none;border-radius:50%}
+
+.help{font-size:12.5px;color:var(--muted);text-align:center;padding:8px 6px 0;line-height:1.6}
+.help b{color:var(--ink);font-weight:400}
+.foot{font-size:11.5px;color:var(--muted);text-align:center}
+.banner{background:#fff3df;border:1px solid #efcb98;border-radius:12px;padding:10px 14px;font-size:14px}
+.skeleton{color:transparent;background:var(--bg);border-radius:6px}
+.sr{position:absolute;left:-9999px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="head">
+    <img src="img/agent.png" alt="선글라스를 쓴 요원 늘곰" width="88" height="88">
+    <div>
+      <span class="tape">OPERATION MAEUM</span>
+      <div class="t">늘곰 요원 본부</div>
+      <div class="s" id="dateLine">본부와 연결하는 중…</div>
+    </div>
+  </header>
+
+  <div class="banner hide" id="banner"></div>
+
+  <div class="hero" aria-label="오늘도 내일도 우리 모두 그냥 룰루랄라">
+    <img src="img/card.jpg" alt="헤드폰을 쓰고 춤추는 늘곰. 오늘도 내일도 우리 모두 그냥 룰루랄라" width="900" height="1260">
+  </div>
+
+  <div class="counters">
+    <div class="counter"><div class="n" id="today">–</div><div class="l">오늘 접속한 요원</div></div>
+    <div class="counter"><div class="n" id="total">–</div><div class="l">지금까지 함께한 요원</div></div>
+  </div>
+
+  <!-- 오늘의 음악 -->
+  <section class="card">
+    <span class="tape-sm" aria-hidden="true"></span>
+    <div class="lab">TODAY'S TRACK</div>
+    <div class="song" id="songTitle">오늘의 추천곡을 가져오는 중<small id="songArtist">잠시만요</small></div>
+    <p class="note" id="songNote"></p>
+    <div class="row">
+      <a class="btn primary" id="songLink" href="#" target="_blank" rel="noopener">▶ 들으러 가기</a>
+      <button class="heart" id="heart" aria-pressed="false" aria-label="이 곡에 하트">♡ <span id="hearts">–</span></button>
+    </div>
+  </section>
+
+  <!-- 마음 날씨 -->
+  <section class="card">
+    <div class="lab">MOOD WEATHER</div>
+    <h3>오늘 내 마음 날씨는?</h3>
+    <div class="moods" id="moods">
+      <button data-k="sun" aria-pressed="false"><span>☀️</span>맑음</button>
+      <button data-k="cloud" aria-pressed="false"><span>☁️</span>구름</button>
+      <button data-k="rain" aria-pressed="false"><span>🌧️</span>비</button>
+      <button data-k="storm" aria-pressed="false"><span>⚡</span>번개</button>
+    </div>
+    <div class="bars" id="bars"></div>
+    <p class="note" id="moodMsg" style="font-size:13px;color:var(--muted)">누르면 우리 학교 오늘 마음 날씨에 더해져요. 누가 눌렀는지는 아무도 몰라요.</p>
+  </section>
+
+  <!-- 이번 주 지령 -->
+  <section class="card" id="missionCard">
+    <div class="lab" id="missionLab">MISSION</div>
+    <h3 id="missionName">이번 주 작전</h3>
+    <p class="note" id="missionDesc">지령은 학교 게시판에서 확인하세요. 지령을 마쳤다면 포스터에 숨은 암호를 입력해요.</p>
+    <form class="row" id="codeForm">
+      <label for="code" class="sr">지령 암호</label>
+      <input type="text" id="code" placeholder="게시판 암호" autocomplete="off" autocapitalize="off" enterkeyhint="done">
+      <button type="submit" id="codeBtn">확인</button>
+    </form>
+    <div class="ok" id="codeMsg">이번 주 작전 완료 요원 <b id="done">–</b>명</div>
+  </section>
+
+  <!-- 도장 카드 -->
+  <section class="card">
+    <div class="lab">AGENT STAMP CARD</div>
+    <h3>요원 도장 카드</h3>
+    <div class="stamps" id="stamps"></div>
+    <p class="note" id="stampMsg" style="font-size:13.5px"></p>
+  </section>
+
+  <!-- 보상 교환권 -->
+  <section class="voucher hide" id="voucher">
+    <div class="lab" style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;letter-spacing:.14em;color:var(--sage)">REWARD TICKET</div>
+    <div class="big" id="voucherTitle">보상 교환권</div>
+    <span class="badge hide" id="finisher">★ 5주 완주 요원</span>
+    <div class="clock" id="clock">--:--:--</div>
+    <div class="daily"><div class="swatch" id="swatch"></div><div><div class="word" id="word">…</div><div class="cap" style="font-size:12px;color:var(--muted)" id="dailyCap">오늘의 색과 단어</div></div></div>
+    <p class="note" id="voucherNote">이 화면을 선생님께 보여 주세요. 시계가 움직이고 오늘의 색과 단어가 맞아야 진짜예요.</p>
+    <div class="pin" id="pinBox">
+      <div class="cap">선생님만 입력하는 칸이에요</div>
+      <form class="row" id="pinForm">
+        <label for="pin" class="sr">교사 비밀번호</label>
+        <input type="password" id="pin" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="교사 비밀번호" autocomplete="off">
+        <button type="submit" id="pinBtn">교환 완료</button>
+      </form>
+      <div class="bad hide" id="pinMsg"></div>
+    </div>
+  </section>
+
+  <!-- 걱정돌 -->
+  <section class="card hide" id="stoneCard">
+    <div class="lab">WORRY STONE</div>
+    <div class="stone">
+      <img src="img/base.png" alt="" width="76" height="76">
+      <div>
+        <h3>우리 걱정돌 태어났어요</h3>
+        <p class="note" style="font-size:13.5px">걱정돌을 만들었다면 눌러 주세요. 오늘 태어난 걱정돌 <b id="stonesToday">–</b>개 · 지금까지 <b id="stonesTotal">–</b>개</p>
+      </div>
+    </div>
+    <div class="row"><button id="stoneBtn">🪨 내 걱정돌도 태어났어요</button><span class="ok hide" id="stoneMsg">오늘 등록 완료!</span></div>
+  </section>
+
+  <p class="help">혼자 감당하기 힘들 땐 본부에 연락하세요.<br><b>Wee클래스(상담실)</b> · 청소년상담 <b>1388</b> · 자살예방상담 <b>109</b></p>
+  <p class="foot" id="foot">이 페이지는 이름, 학번, 위치를 저장하지 않아요. 도장은 이 휴대폰에만 남아요.</p>
+</div>
+
+<script src="config.js"></script>
+<script>
+(function(){
+  'use strict';
+  var API = (window.NG_API||'').trim();
+  var $ = function(id){ return document.getElementById(id); };
+  var MOODS = {sun:'맑음', cloud:'구름', rain:'비', storm:'번개'};
+  var WEEKS_TOTAL = 5, NEED = 3;
+
+  /* ---------- 이 휴대폰에만 남는 기록 ---------- */
+  var KEY = 'neulgom-v1';
+  var ls = load();
+  function load(){ try{ var o = JSON.parse(localStorage.getItem(KEY)||'{}'); return typeof o==='object'&&o?o:{}; }catch(e){ return {}; } }
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(ls)); }catch(e){} }
+  ls.stamps = ls.stamps||{}; ls.heart = ls.heart||{}; ls.mood = ls.mood||{};
+
+  function bump(el){ el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
+  function pop(el){ el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+  function stampCount(){ return Object.keys(ls.stamps).length; }
+
+  /* ---------- 서버 통신 ---------- */
+  var S = null; // 마지막으로 받은 본부 상태
+  function get(){
+    if(!API) return Promise.reject(new Error('no-api'));
+    return fetch(API+'?a=state&t='+Date.now(), {method:'GET', redirect:'follow'}).then(function(r){ return r.json(); });
+  }
+  function post(body){
+    if(!API) return Promise.reject(new Error('no-api'));
+    return fetch(API, {method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)})
+      .then(function(r){ return r.json(); });
+  }
+  function banner(msg){ var b=$('banner'); if(!msg){ b.classList.add('hide'); return; } b.textContent=msg; b.classList.remove('hide'); }
+
+  /* ---------- 그리기 ---------- */
+  var DAYS = ['일','월','화','수','목','금','토'];
+  function fmtDate(iso){ var p=iso.split('-'); var d=new Date(+p[0], +p[1]-1, +p[2]); return (+p[1])+'월 '+(+p[2])+'일 '+DAYS[d.getDay()]+'요일'; }
+
+  function render(s){
+    S = s;
+    var today = s.date;
+    // 날짜 줄
+    var w = s.week;
+    var wl = w===0 ? '작전 준비 중' : (w>WEEKS_TOTAL ? '작전 종료' : w+'주차');
+    $('dateLine').textContent = (window.NG_SCHOOL? window.NG_SCHOOL+' · ' : '') + wl + ' · ' + fmtDate(today);
+
+    $('today').textContent = s.today; $('total').textContent = s.total;
+
+    // 음악
+    if(s.song && s.song.title){
+      $('songTitle').firstChild.nodeValue = s.song.title;
+      $('songArtist').textContent = s.song.artist||'';
+      $('songNote').textContent = s.song.note ? '"'+s.song.note+'"' : '';
+      if(s.song.url){ $('songLink').href = s.song.url; $('songLink').classList.remove('hide'); } else { $('songLink').classList.add('hide'); }
+    } else {
+      $('songTitle').firstChild.nodeValue = '오늘은 쉬어 가는 날';
+      $('songArtist').textContent = '추천곡이 아직 없어요. 내일 다시 들러 주세요.';
+      $('songNote').textContent=''; $('songLink').classList.add('hide');
+    }
+    var hOn = !!ls.heart[today];
+    $('heart').setAttribute('aria-pressed', hOn);
+    $('heart').firstChild.nodeValue = hOn ? '♥ ' : '♡ ';
+    $('hearts').textContent = s.hearts;
+
+    // 마음 날씨
+    var mine = ls.mood[today]||null;
+    Array.prototype.forEach.call($('moods').querySelectorAll('button'), function(b){ b.setAttribute('aria-pressed', b.dataset.k===mine); });
+    var m = s.moods||{}, t=0, k; for(k in MOODS) t += (m[k]||0);
+    var h=''; for(k in MOODS){ var n=m[k]||0, p = t? Math.round(n/t*100):0;
+      h += '<div class="bar"><span>'+MOODS[k]+'</span><div class="track"><i style="width:'+p+'%"></i></div><span class="num">'+n+'명</span></div>'; }
+    $('bars').innerHTML = h;
+    if(mine) $('moodMsg').textContent = '오늘 우리 학교 '+t+'명의 마음 날씨예요. 마음이 바뀌면 다시 골라도 돼요.';
+
+    // 지령
+    var active = w>=1 && w<=WEEKS_TOTAL;
+    if(w===0){
+      $('missionLab').textContent='MISSION · 준비 중';
+      $('missionName').textContent='작전은 '+fmtDate(s.start)+'에 시작해요';
+      $('missionDesc').textContent='첫 지령은 그날 아침 학교 게시판에 붙어요. 그때까지 음악 들으며 기다려요.';
+      $('codeForm').classList.add('hide'); $('codeMsg').classList.add('hide');
+    } else if(w>WEEKS_TOTAL){
+      $('missionLab').textContent='MISSION · 종료';
+      $('missionName').textContent='5주 작전이 끝났어요';
+      $('missionDesc').textContent='함께해 준 모든 요원, 고마워요. 보상 교환권은 아래에 그대로 있어요.';
+      $('codeForm').classList.add('hide'); $('codeMsg').classList.add('hide');
+    } else {
+      $('missionLab').textContent='MISSION · WEEK '+w;
+      $('missionName').textContent = s.weekName || (w+'주차 작전');
+      $('missionDesc').textContent = s.weekDesc || '지령은 학교 게시판에서 확인하세요. 지령을 마쳤다면 포스터에 숨은 암호를 입력해요.';
+      $('codeMsg').classList.remove('hide');
+      if(ls.stamps[w]){
+        $('codeForm').classList.add('hide');
+        $('codeMsg').innerHTML = '이번 주 작전 완료! 도장이 찍혔어요. 함께한 요원 <b>'+s.done+'</b>명';
+      } else {
+        $('codeForm').classList.remove('hide');
+        $('codeMsg').innerHTML = '이번 주 작전 완료 요원 <b id="done">'+s.done+'</b>명';
+      }
+    }
+
+    renderStamps(w);
+    renderVoucher(s);
+
+    // 걱정돌 (4주차부터)
+    if(w>=4){
+      $('stoneCard').classList.remove('hide');
+      $('stonesToday').textContent = s.stonesToday; $('stonesTotal').textContent = s.stonesTotal;
+      var did = ls.stone===today;
+      $('stoneBtn').disabled = did; $('stoneMsg').classList.toggle('hide', !did);
+    } else $('stoneCard').classList.add('hide');
+  }
+
+  function renderStamps(w){
+    var h=''; for(var i=1;i<=WEEKS_TOTAL;i++){
+      var on = !!ls.stamps[i];
+      h += '<div class="stamp'+(on?' on':'')+(i===w&&!on?' now':'')+'" aria-label="'+i+'주차 '+(on?'완료':'미완료')+'">'
+         + (on ? '<img src="img/'+(i===WEEKS_TOTAL?'dance-music':'base')+'.png" alt="">' : i+'주')+'</div>';
+    }
+    $('stamps').innerHTML = h;
+    var c = stampCount();
+    var msg;
+    if(c>=WEEKS_TOTAL) msg = '5주 모두 완료! 전설의 완주 요원이에요.';
+    else if(c>=NEED) msg = '도장 '+c+'개. 보상 교환권이 열렸어요! 끝까지 가면 완주 요원 배지도 받아요.';
+    else msg = '도장 '+c+'개 모았어요. '+(NEED-c)+'개만 더 모으면 보상 교환권이 열려요.';
+    $('stampMsg').textContent = msg;
+  }
+
+  function renderVoucher(s){
+    var c = stampCount();
+    var v = $('voucher');
+    if(c<NEED){ v.classList.add('hide'); return; }
+    v.classList.remove('hide');
+    $('finisher').classList.toggle('hide', c<WEEKS_TOTAL);
+    $('swatch').style.background = s.color||'#ccc';
+    $('word').textContent = s.word||'';
+    $('dailyCap').textContent = '오늘의 색 '+(s.colorName||'')+' · 오늘의 단어';
+    if(ls.redeemed){
+      v.classList.add('done');
+      $('voucherTitle').textContent = '교환 완료';
+      $('voucherNote').textContent = fmtDate(ls.redeemed)+'에 보상을 받았어요. 이 교환권은 더 쓸 수 없어요.';
+      $('pinBox').classList.add('hide');
+    } else {
+      v.classList.remove('done');
+      $('voucherTitle').textContent = '보상 교환권 · 도장 '+c+'개';
+      $('pinBox').classList.remove('hide');
+    }
+  }
+
+  // 교환권 시계: 본부 시간 기준
+  var offset = 0;
+  setInterval(function(){
+    if($('voucher').classList.contains('hide')) return;
+    var d = new Date(Date.now()+offset);
+    var z = function(n){ return (n<10?'0':'')+n; };
+    $('clock').textContent = z(d.getHours())+':'+z(d.getMinutes())+':'+z(d.getSeconds());
+  }, 500);
+
+  /* ---------- 동작 ---------- */
+  $('heart').addEventListener('click', function(){
+    if(!S) return;
+    var today=S.date, on = !ls.heart[today];
+    if(on) ls.heart[today]=true; else delete ls.heart[today];
+    save();
+    S.hearts = Math.max(0, (S.hearts||0)+(on?1:-1));
+    render(S); bump($('heart'));
+    post({a:'heart', on:on}).then(render).catch(function(){});
+  });
+
+  $('moods').addEventListener('click', function(e){
+    var b = e.target.closest('button'); if(!b||!S) return;
+    var today=S.date, k=b.dataset.k, prev=ls.mood[today]||null;
+    if(prev===k) return;
+    ls.mood[today]=k; save();
+    S.moods = S.moods||{}; S.moods[k]=(S.moods[k]||0)+1; if(prev) S.moods[prev]=Math.max(0,(S.moods[prev]||0)-1);
+    render(S); bump(b);
+    post({a:'mood', k:k, prev:prev}).then(render).catch(function(){});
+  });
+
+  $('codeForm').addEventListener('submit', function(e){
+    e.preventDefault(); if(!S) return;
+    var v = $('code').value.trim(); if(!v) return;
+    $('codeBtn').disabled = true;
+    post({a:'code', code:v}).then(function(r){
+      $('codeBtn').disabled = false;
+      if(r && r.ok){
+        ls.stamps[r.week] = r.date; save(); $('code').value='';
+        render(r);
+        pop($('stamps').children[r.week-1]||$('stamps'));
+        if(stampCount()===NEED) setTimeout(function(){ $('voucher').scrollIntoView({behavior:'smooth',block:'center'}); pop($('voucher')); }, 400);
+      } else {
+        $('codeMsg').className='bad'; $('codeMsg').textContent = (r&&r.msg)||'암호가 달라요. 게시판 포스터를 다시 살펴보세요.';
+        setTimeout(function(){ $('codeMsg').className='ok'; if(S) render(S); }, 2500);
+      }
+    }).catch(function(){ $('codeBtn').disabled=false; banner('본부와 연결이 안 돼요. 잠시 후 다시 눌러 주세요.'); });
+  });
+
+  $('pinForm').addEventListener('submit', function(e){
+    e.preventDefault(); if(!S) return;
+    var p = $('pin').value.trim(); if(!p) return;
+    $('pinBtn').disabled = true; $('pinMsg').classList.add('hide');
+    post({a:'redeem', pin:p, stamps:stampCount()}).then(function(r){
+      $('pinBtn').disabled=false; $('pin').value='';
+      if(r && r.ok){ ls.redeemed = r.date; save(); render(r); pop($('voucher')); }
+      else { $('pinMsg').textContent = (r&&r.msg)||'비밀번호가 달라요.'; $('pinMsg').classList.remove('hide'); }
+    }).catch(function(){ $('pinBtn').disabled=false; banner('본부와 연결이 안 돼요. 잠시 후 다시 눌러 주세요.'); });
+  });
+
+  $('stoneBtn').addEventListener('click', function(){
+    if(!S) return;
+    ls.stone = S.date; save();
+    S.stonesToday=(S.stonesToday||0)+1; S.stonesTotal=(S.stonesTotal||0)+1; render(S); bump($('stonesToday'));
+    post({a:'stone'}).then(render).catch(function(){});
+  });
+
+  /* ---------- 시작 ---------- */
+  function start(){
+    if(!API){ banner('아직 본부 주소가 설정되지 않았어요. (config.js)'); $('dateLine').textContent='설정 대기 중'; return; }
+    get().then(function(s){
+      if(!s||!s.ok) throw new Error('bad');
+      offset = (s.now||Date.now()) - Date.now();
+      banner('');
+      var first = ls.visit !== s.date;
+      if(first){ ls.visit = s.date; save(); s.today = (s.today||0)+1; s.total=(s.total||0)+1; }
+      render(s);
+      if(first) post({a:'visit'}).then(render).catch(function(){});
+      // 5주 완주면 도장 5개 상태를 서버에 숫자로만 알림 (익명 합계)
+    }).catch(function(){
+      banner('본부와 연결이 안 돼요. 와이파이나 데이터를 확인하고 새로고침해 주세요.');
+      $('dateLine').textContent='연결 안 됨';
+      // 연결이 안 돼도 도장 카드는 보여 줌
+      renderStamps(0);
+    });
+  }
+  start();
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden && S){ get().then(function(s){ if(s&&s.ok){ offset=(s.now||Date.now())-Date.now(); if(s.date!==S.date){ ls.visit=s.date; save(); s.today++; s.total++; post({a:'visit'}).catch(function(){}); } render(s);} }).catch(function(){}); } });
+})();
+</script>
+</body>
+</html>
