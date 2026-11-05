@@ -14,161 +14,188 @@
 <link rel="apple-touch-icon" href="img/agent.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Gowun+Dodum&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Gowun+Batang:wght@700&family=Gowun+Dodum&display=swap">
 <style>
+/* 글꼴 역할: --disp 제목과 숫자 / --body 본문 / --hand 늘곰이 쓴 말 / --mono 서류 번호
+   색 역할: --seal(인주 빨강)은 '확인·도장·하트'에만, --sage(숲색)는 이름표와 도움 안내에만 */
 :root{
-  --bg:#fbf5e5; --paper:#fffdf6; --ink:#3b2b22; --muted:#8a7868; --line:#e6dcc8;
-  --tape:#d9c3a0; --sage:#7f9a7a; --sage-soft:#e8eee3; --fur:#c98f55; --heart:#d9675b; --gold:#e3b23c;
-  --hand:"Gaegu","Gowun Dodum",system-ui,sans-serif;
+  --bg:#fbf5e5; --paper:#fffdf6; --ink:#3b2b22; --muted:#6f5e50; --line:#ddd0b8; --edge:#d9ccb4;
+  --tape:#d9c3a0; --sage:#4f7355; --sage-soft:#e4ecdf; --seal:#c2402e; --gold:#e3b23c;
+  --disp:"Gowun Batang","Gowun Dodum",serif;
   --body:"Gowun Dodum",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --hand:"Gaegu","Gowun Dodum",system-ui,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Gowun Dodum",monospace;
+  --shadow:0 1px 0 rgba(59,43,34,.04),0 10px 24px -14px rgba(59,43,34,.32);
   color-scheme:light;
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.7;
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.65;word-break:keep-all;overflow-wrap:anywhere;
   padding:max(14px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(28px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
-.wrap{max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
-h1,h2,h3{font-family:var(--hand);font-weight:700;line-height:1.15;margin:0}
-h2{font-size:24px}
-h3{font-size:20px}
+.wrap{max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h3{font-family:var(--disp);font-weight:700;font-size:21px;line-height:1.32;letter-spacing:-.02em;margin:0}
 p{margin:0}
 button,input{font:inherit}
-button{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:8px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:10px;padding:8px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent}
 button:disabled{opacity:.55;cursor:default}
 button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--sage);outline-offset:2px}
 .hide{display:none!important}
 
-/* header */
-.head{display:flex;align-items:center;gap:12px;padding-top:4px}
-.head img{width:88px;height:88px;flex:none;border-radius:50%;background:var(--bg)}
-.head .t{font-family:var(--hand);font-size:30px;font-weight:700;line-height:1.05}
-.head .s{font-size:13px;color:var(--muted)}
-.tape{display:inline-block;background:var(--tape);color:var(--ink);font-family:ui-monospace,Menlo,monospace;font-size:10.5px;letter-spacing:.14em;padding:2px 10px;transform:rotate(-2deg);opacity:.9;margin-bottom:4px}
+/* 화면 순서. 이번 주 지령을 이미 마친 요원에게는 지령 묶음을 곡·날씨 아래로 내린다 */
+.wrap.done #missionCard,.wrap.done #stampCard,.wrap.done #voucher{order:1}
+#stoneCard,.hero,.helpcard,.foot{order:2}
 
-/* hero card */
-.hero{border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#faf3e1}
-.hero img{display:block;width:100%;height:auto}
+/* 머리 */
+.head{display:grid;grid-template-columns:1fr auto;column-gap:8px;align-items:end;padding-top:8px}
+.head>div{display:contents}
+.head .s{grid-column:1/-1;grid-row:1;font-size:12.5px;letter-spacing:.02em;margin-bottom:12px;color:var(--sage)}
+.head .tape{grid-column:1;grid-row:2;justify-self:start;margin-bottom:6px}
+.head .t{grid-column:1;grid-row:3;font-family:var(--disp);font-weight:700;font-size:44px;line-height:1.1;letter-spacing:-.035em}
+.head img{grid-column:2;grid-row:2/4;width:116px;height:116px;margin:0 -8px -8px 0;border-radius:50%;background:var(--bg)}
+.tape{display:inline-block;background:var(--tape);color:var(--ink);font-family:var(--mono);font-size:11px;letter-spacing:.14em;padding:2px 10px;transform:rotate(-2deg);opacity:.9}
 
-.counters{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.counter{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
-.counter .n{font-family:var(--hand);font-size:34px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
-.counter .l{font-size:12.5px;color:var(--muted);margin-top:2px}
+/* 늘곰 손글씨 쪽지 */
+.slogan{position:relative;align-self:flex-start;background:var(--paper);border:1px solid var(--line);padding:14px 18px 10px;
+  font-family:var(--hand);font-weight:700;font-size:23px;line-height:1.25;transform:rotate(-1.2deg);
+  box-shadow:0 8px 16px -12px rgba(59,43,34,.35);margin:2px 0 2px 4px}
+.slogan::before{content:"";position:absolute;top:-9px;left:22px;width:64px;height:17px;background:var(--tape);opacity:.85;transform:rotate(-3deg)}
 
-.card{position:relative;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}
-.card .lab{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;letter-spacing:.14em;color:var(--sage)}
+/* 숫자 */
+.counters{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px 0}
+.counter{padding:0 2px}
+.counter+.counter{border-left:1px solid var(--line);padding-left:16px}
+.counter .n{font-family:var(--disp);font-weight:700;font-size:40px;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.counter .l{font-size:13px;color:var(--muted);margin-top:2px}
+
+/* 카드 */
+.card{position:relative;background:var(--paper);border:1px solid var(--edge);border-radius:6px;padding:18px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow)}
+.lab{font-size:12.5px;letter-spacing:.1em;color:var(--sage)}
 .card .tape-sm{position:absolute;top:-9px;left:50%;width:74px;height:18px;margin-left:-37px;background:var(--tape);opacity:.85;transform:rotate(3deg);pointer-events:none}
-.song{font-family:var(--hand);font-size:26px;font-weight:700;line-height:1.15;word-break:keep-all}
-.song small{display:block;font-family:var(--body);font-size:13.5px;font-weight:400;color:var(--muted);margin-top:2px}
-.note{font-size:14.5px;color:#5a4a3e}
+.band{display:flex;justify-content:space-between;align-items:center;margin:-18px -18px 6px;padding:10px 18px;
+  background:var(--ink);color:var(--paper);border-radius:5px 5px 0 0;font-size:14.5px;letter-spacing:.12em}
+.band span{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;opacity:.82}
+.sealmark{position:absolute;right:16px;top:56px;border:2px solid var(--seal);color:var(--seal);
+  font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:.22em;padding:3px 4px 3px 8px;border-radius:3px;
+  transform:rotate(7deg);opacity:.82;pointer-events:none}
+#missionName{padding-right:76px}
+.dday{display:flex;align-items:baseline;gap:10px}
+.dday b{font-family:var(--disp);font-weight:700;font-size:52px;line-height:1;letter-spacing:-.02em}
+.dday span{font-size:13.5px;color:var(--muted)}
+.song{font-family:var(--disp);font-size:24px;font-weight:700;line-height:1.28;letter-spacing:-.02em}
+.song small{display:block;font-family:var(--body);font-size:14px;font-weight:400;letter-spacing:0;color:var(--muted);margin-top:5px}
+.note{font-size:14.5px;color:#4a3a2f}
+#songNote{font-family:var(--hand);font-weight:700;font-size:20px;line-height:1.35;color:var(--ink)}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--ink);border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:8px 16px}
-.btn.primary{background:var(--sage);border-color:var(--sage);color:#fff}
-.heart{display:inline-flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums}
-.heart[aria-pressed="true"]{background:var(--heart);border-color:var(--heart);color:#fff}
-@media (prefers-reduced-motion:no-preference){
-  .bump{animation:bump .35s ease}
-  @keyframes bump{50%{transform:scale(1.14)}}
-  .pop{animation:pop .5s cubic-bezier(.2,1.4,.4,1)}
-  @keyframes pop{0%{transform:scale(.3);opacity:0}100%{transform:scale(1);opacity:1}}
-}
+.btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--ink);border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:8px 16px}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.heart{display:inline-flex;align-items:center;gap:6px;border-radius:999px;font-variant-numeric:tabular-nums}
+.heart[aria-pressed="true"]{background:var(--seal);border-color:var(--seal);color:#fff}
 
-.moods{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.moods button{border-radius:12px;padding:8px 0;display:flex;flex-direction:column;align-items:center;font-size:12.5px;gap:1px;line-height:1.3}
+/* 마음 날씨: 넷 중 하나 고르기 */
+.moods{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--paper)}
+.moods button{border:0;border-left:1px solid var(--line);border-radius:0;padding:10px 0;display:flex;flex-direction:column;align-items:center;font-size:13.5px;gap:1px;line-height:1.3}
+.moods button:first-child{border-left:0}
 .moods button span{font-size:24px}
-.moods button[aria-pressed="true"]{border-color:var(--sage);background:var(--sage-soft);box-shadow:inset 0 0 0 1px var(--sage)}
+.moods button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
 .bars{display:flex;flex-direction:column;gap:4px;font-size:12.5px}
 .bar{display:grid;grid-template-columns:40px 1fr 38px;gap:6px;align-items:center}
 .bar i{display:block;height:9px;border-radius:5px;background:var(--sage);min-width:2px;transition:width .4s}
 .bar .track{background:var(--bg);border-radius:5px}
 .bar .num{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
 
+/* 입력 */
 form.row{gap:8px}
-input[type=text],input[type=password],input[inputmode=numeric]{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:9px 12px;min-width:0;flex:1;font-size:16px}
+input[type=text],input[type=password]{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:9px 12px;min-width:0;flex:1;font-size:16px}
+#code{height:52px;font-size:18px;letter-spacing:.08em}
+#codeBtn{height:52px;padding:0 22px;font-size:17px;background:var(--seal);border-color:var(--seal);color:#fff}
+.hint{font-size:12.5px;color:var(--muted)}
 .ok{color:var(--sage);font-size:14px}
-.bad{color:var(--heart);font-size:14px}
+.bad{color:var(--seal);font-size:14px}
 
-/* stamps */
-.stamps{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-.stamp{aspect-ratio:1;border:2px dashed var(--line);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:var(--hand);font-size:13px;color:var(--muted);line-height:1.1;background:var(--bg);overflow:hidden}
-.stamp.on{border:2px solid var(--fur);background:#fff3df;color:var(--ink)}
+/* 도장 */
+.stamps{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.stamp{aspect-ratio:1;border:2px dashed var(--line);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.1;background:var(--bg);overflow:hidden}
+.stamp.on{border:2px solid var(--seal);color:var(--ink);box-shadow:inset 0 0 0 2px var(--bg),inset 0 0 0 3px var(--seal)}
+.stamp.on:nth-child(odd){transform:rotate(-7deg)}
+.stamp.on:nth-child(even){transform:rotate(5deg)}
 .stamp.on img{width:88%;height:88%;object-fit:contain}
-.stamp.now{border-color:var(--sage)}
+.stamp.now{border-color:var(--seal);color:var(--seal)}
 
-/* voucher */
-.voucher{border:2px solid var(--ink);border-radius:16px;padding:16px;background:#fff;display:flex;flex-direction:column;gap:10px;position:relative}
-.voucher .big{font-family:var(--hand);font-size:30px;font-weight:700;line-height:1.1}
-.clock{font-family:ui-monospace,Menlo,monospace;font-size:34px;letter-spacing:.04em;font-variant-numeric:tabular-nums;line-height:1}
+/* 교환권 */
+.voucher{border:1.5px solid var(--ink);border-radius:6px;padding:18px;background:#fff;display:flex;flex-direction:column;gap:10px;position:relative;box-shadow:var(--shadow)}
+.voucher .band{border-radius:4px 4px 0 0}
+.clock{font-family:var(--mono);font-size:34px;letter-spacing:.04em;font-variant-numeric:tabular-nums;line-height:1}
 .daily{display:flex;align-items:center;gap:10px}
 .swatch{width:46px;height:46px;border-radius:12px;border:2px solid var(--ink);flex:none}
-.word{font-family:var(--hand);font-size:28px;font-weight:700;line-height:1}
+.word{font-family:var(--disp);font-size:26px;font-weight:700;line-height:1;letter-spacing:-.02em}
 .voucher.done{background:#f1efe8;border-style:dashed}
-.badge{display:inline-block;background:var(--gold);color:#3b2b22;font-family:var(--hand);font-weight:700;font-size:16px;padding:2px 12px;border-radius:999px;transform:rotate(-3deg)}
-.pin{display:flex;flex-direction:column;gap:8px;border-top:1px dashed var(--line);padding-top:10px}
+.badge{display:inline-block;align-self:flex-start;background:var(--gold);color:#3b2b22;font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:-.02em;padding:2px 12px;border-radius:999px;transform:rotate(-3deg)}
+.pin{position:relative;display:flex;flex-direction:column;gap:8px;border-top:2px dashed var(--ink);margin-top:6px;padding-top:14px}
+.pin::before,.pin::after{content:"";position:absolute;top:-10px;width:18px;height:18px;border-radius:50%;background:var(--bg);border:1.5px solid var(--ink)}
+.pin::before{left:-28.5px;clip-path:inset(0 0 0 50%)}
+.pin::after{right:-28.5px;clip-path:inset(0 50% 0 0)}
 .pin .cap{font-size:12.5px;color:var(--muted)}
 
 .stone{display:flex;gap:12px;align-items:center}
 .stone img{width:76px;height:76px;flex:none;border-radius:50%}
 
-.help{font-size:12.5px;color:var(--muted);text-align:center;padding:8px 6px 0;line-height:1.6}
-.help b{color:var(--ink);font-weight:400}
-.foot{font-size:11.5px;color:var(--muted);text-align:center}
+/* 포스터 */
+.hero{border-radius:6px;overflow:hidden;border:1px solid var(--edge);background:#faf3e1;box-shadow:var(--shadow);max-width:260px;align-self:center;transform:rotate(1deg)}
+.hero img{display:block;width:100%;height:auto}
+
+/* 도움받을 곳 */
+.helpcard{display:flex;flex-direction:column;gap:8px;background:var(--sage-soft);border:1px solid #cfdcc9;border-radius:6px;padding:16px}
+.helprow{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:50px;padding:6px 14px;background:var(--paper);
+  border:1px solid var(--line);border-radius:10px;color:var(--ink);text-decoration:none;font-size:15px;line-height:1.35}
+.helprow b{font-family:var(--disp);font-size:21px;font-weight:700}
+.helprow em{font-style:normal;font-size:13px;color:var(--muted)}
+.helprow small{display:block;font-size:12.5px;color:var(--muted)}
+
+.foot{font-size:13px;color:var(--muted);text-align:center}
 .banner{background:#fff3df;border:1px solid #efcb98;border-radius:12px;padding:10px 14px;font-size:14px}
-.skeleton{color:transparent;background:var(--bg);border-radius:6px}
 .sr{position:absolute;left:-9999px}
+
+/* 움직임: 누른 순간에만. 화면이 열릴 때 움직이는 것은 없다 */
+@media (prefers-reduced-motion:no-preference){
+  button,.btn{transition:transform .12s ease-out,background-color .15s,color .15s,border-color .15s}
+  button:active:not(:disabled),.btn:active{transform:scale(.96)}
+  .bump{animation:bump .35s ease}
+  @keyframes bump{50%{transform:scale(1.14)}}
+  .pop{animation:pop .5s cubic-bezier(.2,1.4,.4,1)}
+  @keyframes pop{0%{transform:scale(.3);opacity:0}100%{transform:scale(1);opacity:1}}
+  .stamp.pop{animation:slam .5s cubic-bezier(.2,.9,.3,1.25) both}
+  @keyframes slam{0%{scale:2.4;opacity:0}55%{scale:.9;opacity:1}100%{scale:1;opacity:1}}
+  .live::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--seal);margin-right:6px;vertical-align:1px;animation:live 2.6s ease-out infinite}
+  @keyframes live{0%{box-shadow:0 0 0 0 rgba(194,64,46,.45)}70%,100%{box-shadow:0 0 0 7px rgba(194,64,46,0)}}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
 
   <header class="head">
-    <img src="img/agent.png" alt="선글라스를 쓴 요원 늘곰" width="88" height="88">
+    <img src="img/agent.png" alt="선글라스를 쓴 요원 늘곰" width="116" height="116">
     <div>
       <span class="tape">OPERATION MAEUM</span>
-      <div class="t">늘곰 요원 본부</div>
+      <div class="t">늘곰 <br>요원 본부</div>
       <div class="s" id="dateLine">본부와 연결하는 중…</div>
     </div>
   </header>
 
   <div class="banner hide" id="banner"></div>
 
-  <div class="hero" aria-label="오늘도 내일도 우리 모두 그냥 룰루랄라">
-    <img src="img/card.jpg" alt="헤드폰을 쓰고 춤추는 늘곰. 오늘도 내일도 우리 모두 그냥 룰루랄라" width="900" height="1260">
-  </div>
+  <p class="slogan">오늘도 내일도 우리 모두<br>그냥 ♪ 룰루랄라 ♫</p>
 
   <div class="counters">
-    <div class="counter"><div class="n" id="today">–</div><div class="l">오늘 접속한 요원</div></div>
+    <div class="counter"><div class="n" id="today">–</div><div class="l live">오늘 접속한 요원</div></div>
     <div class="counter"><div class="n" id="total">–</div><div class="l">지금까지 함께한 요원</div></div>
   </div>
 
-  <!-- 오늘의 음악 -->
-  <section class="card">
-    <span class="tape-sm" aria-hidden="true"></span>
-    <div class="lab">TODAY'S TRACK</div>
-    <div class="song" id="songTitle">오늘의 추천곡을 가져오는 중<small id="songArtist">잠시만요</small></div>
-    <p class="note" id="songNote"></p>
-    <div class="row">
-      <a class="btn primary" id="songLink" href="#" target="_blank" rel="noopener">▶ 들으러 가기</a>
-      <button class="heart" id="heart" aria-pressed="false" aria-label="이 곡에 하트">♡ <span id="hearts">–</span></button>
-    </div>
-  </section>
-
-  <!-- 마음 날씨 -->
-  <section class="card">
-    <div class="lab">MOOD WEATHER</div>
-    <h3>오늘 내 마음 날씨는?</h3>
-    <div class="moods" id="moods">
-      <button data-k="sun" aria-pressed="false"><span>☀️</span>맑음</button>
-      <button data-k="cloud" aria-pressed="false"><span>☁️</span>구름</button>
-      <button data-k="rain" aria-pressed="false"><span>🌧️</span>비</button>
-      <button data-k="storm" aria-pressed="false"><span>⚡</span>번개</button>
-    </div>
-    <div class="bars" id="bars"></div>
-    <p class="note" id="moodMsg" style="font-size:13px;color:var(--muted)">누르면 우리 학교 오늘 마음 날씨에 더해져요. 누가 눌렀는지는 아무도 몰라요.</p>
-  </section>
-
   <!-- 이번 주 지령 -->
-  <section class="card" id="missionCard">
-    <div class="lab" id="missionLab">MISSION</div>
+  <section class="card" id="missionCard" aria-label="이번 주 지령">
+    <div class="band"><b aria-hidden="true">지 령 서</b><span id="bandNo">NO. –</span></div>
+    <span class="sealmark" aria-hidden="true">대외비</span>
+    <div class="dday hide" id="dday"><b id="ddayN">D-0</b><span>작전 개시까지</span></div>
     <h3 id="missionName">이번 주 작전</h3>
     <p class="note" id="missionDesc">지령은 학교 게시판에서 확인하세요. 지령을 마쳤다면 포스터에 숨은 암호를 입력해요.</p>
     <form class="row" id="codeForm">
@@ -176,21 +203,20 @@ input[type=text],input[type=password],input[inputmode=numeric]{border:1px solid 
       <input type="text" id="code" placeholder="게시판 암호" autocomplete="off" autocapitalize="off" enterkeyhint="done">
       <button type="submit" id="codeBtn">확인</button>
     </form>
+    <span class="hint" id="codeHint">암호는 맞는지만 확인해요. 누가 넣었는지는 남지 않아요.</span>
     <div class="ok" id="codeMsg">이번 주 작전 완료 요원 <b id="done">–</b>명</div>
   </section>
 
   <!-- 도장 카드 -->
-  <section class="card">
-    <div class="lab">AGENT STAMP CARD</div>
-    <h3>요원 도장 카드</h3>
+  <section class="card" id="stampCard" aria-label="요원 도장 카드">
+    <div class="band"><b aria-hidden="true">요 원 증</b><span id="bandStamps">도장 0 / 5</span></div>
     <div class="stamps" id="stamps"></div>
     <p class="note" id="stampMsg" style="font-size:13.5px"></p>
   </section>
 
   <!-- 보상 교환권 -->
-  <section class="voucher hide" id="voucher">
-    <div class="lab" style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;letter-spacing:.14em;color:var(--sage)">REWARD TICKET</div>
-    <div class="big" id="voucherTitle">보상 교환권</div>
+  <section class="voucher hide" id="voucher" aria-label="보상 교환권">
+    <div class="band"><b id="bandVoucher">보상 교환권</b><span id="bandVoucherN">도장 3개</span></div>
     <span class="badge hide" id="finisher">★ 5주 완주 요원</span>
     <div class="clock" id="clock">--:--:--</div>
     <div class="daily"><div class="swatch" id="swatch"></div><div><div class="word" id="word">…</div><div class="cap" style="font-size:12px;color:var(--muted)" id="dailyCap">오늘의 색과 단어</div></div></div>
@@ -206,9 +232,35 @@ input[type=text],input[type=password],input[inputmode=numeric]{border:1px solid 
     </div>
   </section>
 
+  <!-- 오늘의 음악 -->
+  <section class="card" id="songCard">
+    <span class="tape-sm" aria-hidden="true"></span>
+    <div class="lab">오늘의 곡</div>
+    <div class="song" id="songTitle">오늘의 추천곡을 가져오는 중<small id="songArtist">잠시만요</small></div>
+    <p class="note" id="songNote"></p>
+    <div class="row">
+      <a class="btn primary" id="songLink" href="#" target="_blank" rel="noopener">▶ 들으러 가기</a>
+      <button class="heart" id="heart" aria-pressed="false" aria-label="이 곡에 하트">♡ <span id="hearts">–</span></button>
+    </div>
+  </section>
+
+  <!-- 마음 날씨 -->
+  <section class="card" id="moodCard">
+    <div class="lab">마음 날씨</div>
+    <h3>오늘 내 마음 날씨는?</h3>
+    <div class="moods" id="moods">
+      <button data-k="sun" aria-pressed="false"><span>☀️</span>맑음</button>
+      <button data-k="cloud" aria-pressed="false"><span>☁️</span>구름</button>
+      <button data-k="rain" aria-pressed="false"><span>🌧️</span>비</button>
+      <button data-k="storm" aria-pressed="false"><span>⚡</span>번개</button>
+    </div>
+    <div class="bars" id="bars"></div>
+    <p class="note" id="moodMsg" style="font-size:13px;color:var(--muted)">누르면 우리 학교 오늘 마음 날씨에 더해져요. 누가 눌렀는지는 아무도 몰라요.</p>
+  </section>
+
   <!-- 걱정돌 -->
   <section class="card hide" id="stoneCard">
-    <div class="lab">WORRY STONE</div>
+    <div class="lab">걱정돌</div>
     <div class="stone">
       <img src="img/base.png" alt="" width="76" height="76">
       <div>
@@ -219,7 +271,18 @@ input[type=text],input[type=password],input[inputmode=numeric]{border:1px solid 
     <div class="row"><button id="stoneBtn">🪨 내 걱정돌도 태어났어요</button><span class="ok hide" id="stoneMsg">오늘 등록 완료!</span></div>
   </section>
 
-  <p class="help">혼자 감당하기 힘들 땐 본부에 연락하세요.<br><b>Wee클래스(상담실)</b> · 청소년상담 <b>1388</b> · 자살예방상담 <b>109</b></p>
+  <div class="hero" aria-label="오늘도 내일도 우리 모두 그냥 룰루랄라">
+    <img src="img/card.jpg" alt="헤드폰을 쓰고 춤추는 늘곰. 오늘도 내일도 우리 모두 그냥 룰루랄라" width="900" height="1260" loading="lazy">
+  </div>
+
+  <!-- 도움받을 곳. 109만 누르면 전화가 걸린다(1388은 휴대전화에서 지역번호가 필요해 번호만 보여 준다) -->
+  <section class="helpcard" aria-label="도움받을 곳">
+    <div class="lab">도움이 필요할 때</div>
+    <h3>혼자 감당하기 힘들 땐 본부에 연락하세요</h3>
+    <div class="helprow"><span>Wee클래스</span><em>학교 상담실</em></div>
+    <div class="helprow"><span>청소년상담 전화<small>휴대전화는 지역번호 + 1388</small></span><b>1388</b></div>
+    <a class="helprow" href="tel:109"><span>자살예방상담 전화<small>누르면 전화가 걸려요</small></span><b>109</b></a>
+  </section>
   <p class="foot" id="foot">이 페이지는 이름, 학번, 위치를 저장하지 않아요. 도장은 이 휴대폰에만 남아요.</p>
 </div>
 
@@ -243,6 +306,24 @@ input[type=text],input[type=password],input[inputmode=numeric]{border:1px solid 
   function pop(el){ el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
   function stampCount(){ return Object.keys(ls.stamps).length; }
 
+  // 접속 숫자: 화면을 처음 열 때 한 번만 0에서 올라온다 (움직임 줄이기를 켠 폰에서는 바로 보인다)
+  var still = !!(window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches);
+  function countTo(el, n){
+    n = +n||0;
+    if(el._run){ el._n = n; return; }
+    if(el._seen || still || n<2){ el._seen = true; el.textContent = n; return; }
+    el._seen = true; el._run = true; el._n = n;
+    var t0 = performance.now();
+    (function tick(t){
+      if(!el._run) return;
+      var p = Math.min(1,(t-t0)/700), e = 1-Math.pow(1-p,3);
+      el.textContent = Math.round(el._n*e);
+      if(p<1) requestAnimationFrame(tick); else el._run = false;
+    })(t0);
+    // 화면이 뒤에 있어 움직임이 멈춰도 숫자는 반드시 맞게 남긴다
+    setTimeout(function(){ if(el._run){ el._run = false; el.textContent = el._n; } }, 1000);
+  }
+
   /* ---------- 서버 통신 ---------- */
   var S = null; // 마지막으로 받은 본부 상태
   function get(){
@@ -259,6 +340,8 @@ input[type=text],input[type=password],input[inputmode=numeric]{border:1px solid 
   /* ---------- 그리기 ---------- */
   var DAYS = ['일','월','화','수','목','금','토'];
   function fmtDate(iso){ var p=iso.split('-'); var d=new Date(+p[0], +p[1]-1, +p[2]); return (+p[1])+'월 '+(+p[2])+'일 '+DAYS[d.getDay()]+'요일'; }
+  function dayNo(iso){ var p=iso.split('-'); return Math.round(Date.UTC(+p[0], +p[1]-1, +p[2])/864e5); }
+  var placed = false; // 카드 순서는 화면을 열 때 한 번만 정한다
 
   function render(s){
     S = s;
@@ -268,7 +351,7 @@ input[type=text],input[type=password],input[inputmode=numeric]{border:1px solid 
     var wl = w===0 ? '작전 준비 중' : (w>WEEKS_TOTAL ? '작전 종료' : w+'주차');
     $('dateLine').textContent = (window.NG_SCHOOL? window.NG_SCHOOL+' · ' : '') + wl + ' · ' + fmtDate(today);
 
-    $('today').textContent = s.today; $('total').textContent = s.total;
+    countTo($('today'), s.today); countTo($('total'), s.total);
 
     // 음악
     if(s.song && s.song.title){
@@ -297,18 +380,21 @@ input[type=text],input[type=password],input[inputmode=numeric]{border:1px solid 
 
     // 지령
     var active = w>=1 && w<=WEEKS_TOTAL;
+    var todo = active && !ls.stamps[w]; // 이번 주 암호를 아직 안 넣음
     if(w===0){
-      $('missionLab').textContent='MISSION · 준비 중';
+      $('bandNo').textContent = '준비 중';
+      var dd = dayNo(s.start) - dayNo(today);
+      $('ddayN').textContent = 'D-'+dd; $('dday').classList.toggle('hide', !(dd>0));
       $('missionName').textContent='작전은 '+fmtDate(s.start)+'에 시작해요';
       $('missionDesc').textContent='첫 지령은 그날 아침 학교 게시판에 붙어요. 그때까지 음악 들으며 기다려요.';
       $('codeForm').classList.add('hide'); $('codeMsg').classList.add('hide');
     } else if(w>WEEKS_TOTAL){
-      $('missionLab').textContent='MISSION · 종료';
+      $('bandNo').textContent = '작전 종료'; $('dday').classList.add('hide');
       $('missionName').textContent='5주 작전이 끝났어요';
       $('missionDesc').textContent='함께해 준 모든 요원, 고마워요. 보상 교환권은 아래에 그대로 있어요.';
       $('codeForm').classList.add('hide'); $('codeMsg').classList.add('hide');
     } else {
-      $('missionLab').textContent='MISSION · WEEK '+w;
+      $('bandNo').textContent = 'NO. 0'+w+' / 0'+WEEKS_TOTAL; $('dday').classList.add('hide');
       $('missionName').textContent = s.weekName || (w+'주차 작전');
       $('missionDesc').textContent = s.weekDesc || '지령은 학교 게시판에서 확인하세요. 지령을 마쳤다면 포스터에 숨은 암호를 입력해요.';
       $('codeMsg').classList.remove('hide');
@@ -320,6 +406,11 @@ input[type=text],input[type=password],input[inputmode=numeric]{border:1px solid 
         $('codeMsg').innerHTML = '이번 주 작전 완료 요원 <b id="done">'+s.done+'</b>명';
       }
     }
+    $('codeHint').classList.toggle('hide', !todo);
+
+    // 할 일이 남았으면(또는 준비 기간이면) 지령 묶음이 위, 이미 마쳤으면 곡·날씨 아래.
+    // 암호를 맞힌 순간 카드가 아래로 달아나지 않게, 화면을 열 때 한 번만 정한다.
+    if(!placed){ placed = true; document.querySelector('.wrap').classList.toggle('done', !(w===0 || todo)); }
 
     renderStamps(w);
     renderVoucher(s);
@@ -346,6 +437,7 @@ input[type=text],input[type=password],input[inputmode=numeric]{border:1px solid 
     else if(c>=NEED) msg = '도장 '+c+'개. 보상 교환권이 열렸어요! 끝까지 가면 완주 요원 배지도 받아요.';
     else msg = '도장 '+c+'개 모았어요. '+(NEED-c)+'개만 더 모으면 보상 교환권이 열려요.';
     $('stampMsg').textContent = msg;
+    $('bandStamps').textContent = '도장 '+c+' / '+WEEKS_TOTAL;
   }
 
   function renderVoucher(s){
@@ -357,14 +449,15 @@ input[type=text],input[type=password],input[inputmode=numeric]{border:1px solid 
     $('swatch').style.background = s.color||'#ccc';
     $('word').textContent = s.word||'';
     $('dailyCap').textContent = '오늘의 색 '+(s.colorName||'')+' · 오늘의 단어';
+    $('bandVoucherN').textContent = '도장 '+c+'개';
     if(ls.redeemed){
       v.classList.add('done');
-      $('voucherTitle').textContent = '교환 완료';
+      $('bandVoucher').textContent = '교환 완료';
       $('voucherNote').textContent = fmtDate(ls.redeemed)+'에 보상을 받았어요. 이 교환권은 더 쓸 수 없어요.';
       $('pinBox').classList.add('hide');
     } else {
       v.classList.remove('done');
-      $('voucherTitle').textContent = '보상 교환권 · 도장 '+c+'개';
+      $('bandVoucher').textContent = '보상 교환권';
       $('pinBox').classList.remove('hide');
     }
   }
