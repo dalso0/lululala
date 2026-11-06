@@ -1,0 +1,737 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#6f6a61">
+<title>늘곰 지하 은신처 시안</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@700&family=Gowun+Dodum&display=swap">
+<style>html,body{margin:0;padding:0}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<style>
+/* Layout: 폰에서는 방이 화면 전체를 쓴다(늘곰이 걸어 다니는 한 화면짜리 방).
+   넓은 화면에서는 왼쪽에 시안 메모, 오른쪽에 휴대폰 틀 안의 방. */
+:root{
+  /* 페이지(메모) 색: 보는 사람의 밝은/어두운 화면 설정을 따른다 */
+  --page:#eceae4; --page-ink:#2e2520; --page-muted:#62574e; --frame:#2e2520;
+  /* 방과 조작부 색: 밝은 종이 한 가지로 고정한다. 배포된 학생 화면의 색을 그대로 쓴다 */
+  --bg:#fbf5e5; --paper:#fffdf6; --surface:#efe5cd; --sage:#d5e0ce;
+  --ink:#3b2b22; --ink-2:#4d3b30; --muted:#6a5a4d; --on-ink-soft:#d8cdb8;
+  --tape:#dcc59d; --red:#c5304a; --line:#4a3024; --floor:#f4d5a7;
+  /* 서체 두 가지: 손글씨는 제목과 늘곰의 말, 나머지는 본문 서체 */
+  --hand:"Gaegu","Gowun Dodum",system-ui,sans-serif;
+  --text:"Gowun Dodum",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  /* 글자 크기 네 단계 */
+  --t-display:32px; --t-head:22px; --t-body:16px; --t-small:13px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--page:#1d1a17;--page-ink:#efe6da;--page-muted:#b5a797;--frame:#3d352e;color-scheme:dark}}
+:root[data-theme="dark"]{--page:#1d1a17;--page-ink:#efe6da;--page-muted:#b5a797;--frame:#3d352e;color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+/* 한글은 낱말 사이에서만 줄을 바꾼다 */
+body{background:var(--page);color:var(--page-ink);font-family:var(--text);font-size:var(--t-body);line-height:1.6;word-break:keep-all;overflow-wrap:anywhere;-webkit-text-size-adjust:100%}
+h1,h2,h3,p,ul{margin:0}
+ul{padding:0;list-style:none}
+button,input{font:inherit;color:inherit}
+button{-webkit-tap-highlight-color:transparent;cursor:pointer}
+.sr{position:absolute;left:-9999px}
+
+.page,.device{height:100%}
+.memo{display:none}
+@media (max-width:859px){body{overflow:hidden;overscroll-behavior:none}}
+
+/* ---------- 휴대폰 화면 ---------- */
+.phone{position:relative;height:100%;max-width:480px;margin:0 auto;background:#6f6a61;color:var(--ink);color-scheme:light;overflow:hidden;overflow:clip;touch-action:manipulation;user-select:none;-webkit-user-select:none;container-type:inline-size}
+.phone :focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+
+/* 방: 벽, 걸레받이, 마루, 러그는 색연필 그림 한 장이다 */
+.world{position:absolute;left:0;top:0;width:1600px;height:900px;transform-origin:0 0;will-change:transform}
+.room-bg{position:absolute;left:0;top:0;width:1600px;height:900px;max-width:none;display:block;pointer-events:none}
+.paw{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;opacity:.3;pointer-events:none}
+
+/* 물건은 배경에 그려져 있다. 그 위에 보이지 않는 누름 영역을 얹고, 물건 테두리를 따라 흰 선을 둘러 누를 수 있음을 알린다 */
+.obj{position:absolute;display:block;padding:0;border:0;background:none;line-height:0;border-radius:18px}
+/* 물건 조각: 배경을 물건 모양으로 한 번 더 잘라 올려 두고, 누르면 그 조각만 살짝 커지고 밝아진다 */
+.piece{position:absolute;left:0;top:0;width:1600px;height:900px;background:url(img/hideout-bg.webp) 0 0/1600px 900px no-repeat;pointer-events:none;z-index:3;transition:transform .18s cubic-bezier(.2,1.7,.4,1),filter .18s}
+.piece.press{transform:scale(1.05);filter:brightness(1.13)}
+.lines{position:absolute;left:0;top:0;width:1600px;height:900px;overflow:visible;pointer-events:none;z-index:6}
+.lines polygon{fill:none;stroke-linejoin:round;stroke-linecap:round}
+.lines .u{stroke:#3b2b22;stroke-opacity:.5;stroke-width:10}
+.lines .w{stroke:#fffdf6;stroke-width:4.5;transition:stroke-width .15s}
+.lines g g{transition:transform .18s cubic-bezier(.2,1.7,.4,1);transform-box:fill-box;transform-origin:center}
+.lines g.press{transform:scale(1.05)}
+.lines g.press .w{stroke-width:7}
+/* 이름은 상자 없이 물건 옆에 손글씨로 적는다 */
+.label{position:absolute;z-index:1500;display:flex;align-items:center;gap:8px;font-family:var(--hand);font-weight:700;font-size:28px;line-height:1;color:#fffdf6;-webkit-text-stroke:6px #3b2b22;paint-order:stroke fill;white-space:nowrap;pointer-events:none}
+.world.live .label{transition:opacity .2s}
+.label.cut{opacity:0}
+.label .dot{flex:none;width:15px;height:15px;border-radius:50%;background:var(--red);box-shadow:0 0 0 3px #fffdf6}
+.pin-note{position:absolute;left:553px;top:222px;width:76px;height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--hand);font-weight:700;font-size:17px;line-height:1.05;color:var(--ink);pointer-events:none;z-index:5}
+.pin-done{position:absolute;left:606px;top:256px;padding:1px 5px 0;border:2px solid var(--red);color:var(--red);background:rgba(255,253,246,.85);font-family:var(--hand);font-weight:700;font-size:17px;line-height:1.1;transform:rotate(-10deg);pointer-events:none;z-index:5}
+/* 창밖 날씨: 창 모양대로 색을 덧입힌다 */
+.glass{position:absolute;left:97px;top:88px;width:156px;height:350px;clip-path:polygon(6.4% 19.4%,94.2% 4.9%,95.5% 72.9%,7.7% 97.7%);mix-blend-mode:multiply;pointer-events:none;z-index:4;transition:background .4s}
+/* 화면 밖에 방이 더 있다는 표시 */
+.edge{position:absolute;top:46%;z-index:1900;width:48px;height:64px;padding:0;border:2.5px solid var(--ink);background:var(--paper);color:var(--ink);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 0 var(--ink);transition:transform .08s,box-shadow .08s}
+.edge.l{left:0;border-left:0;border-radius:0 18px 18px 0}.edge.r{right:0;border-right:0;border-radius:18px 0 0 18px}
+.edge[hidden]{display:none}
+/* 바로 가기: 방은 넓게 두고, 할 일은 한 번에 닿게 한다. 그림과 글자가 함께 있는 네모 버튼 */
+.acts{gap:6px}
+.pill.go{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-width:58px;min-height:58px;padding:5px 4px 4px;font-size:17px}
+.pill.go svg{width:24px;height:24px;flex:none}
+.pill.go .dot{position:absolute;right:-6px;top:-6px;width:13px;height:13px;border-radius:50%;background:var(--red);box-shadow:0 0 0 2.5px var(--paper)}
+@container (max-width:350px){.acts{gap:4px}.pill.go{min-width:52px}}
+
+/* 늘곰 */
+.bear{position:absolute;width:0;height:0;pointer-events:none}
+.bear .scale{position:absolute;left:0;top:0;transform-origin:0 0}
+.bear .ground{position:absolute;top:-10px;height:20px;border-radius:50%;background:rgba(74,48,36,.18)}
+.bear .flip{position:absolute;left:0;top:0;transform-origin:0 0}
+.bear img{position:absolute;display:block;max-width:none;transform-origin:50% 96%}
+.bubble{position:absolute;left:0;transform:translateX(-50%);min-width:84px;max-width:280px;width:max-content;padding:10px 18px;border-radius:20px;background:var(--paper);color:var(--ink);text-align:center;font-family:var(--hand);font-weight:700;font-size:29px;line-height:1.2;opacity:0;transition:opacity .2s}
+.bubble::after{content:"";position:absolute;left:50%;bottom:-6px;width:14px;height:14px;margin-left:-7px;background:var(--paper);transform:rotate(45deg)}
+.bubble.on{opacity:1}
+
+/* 위아래 조작부 */
+.hud{position:absolute;left:0;right:0;top:0;z-index:2000;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding-top:max(12px,env(safe-area-inset-top,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));pointer-events:none}
+.who{min-width:0;padding:7px 14px 8px;border:2.5px solid var(--ink);border-radius:16px;background:var(--paper);pointer-events:auto}
+.who h1{font-family:var(--hand);font-weight:700;font-size:var(--t-head);line-height:1.1}
+.who p{font-size:var(--t-small);line-height:1.4;color:var(--muted)}
+/* 버튼: 먹색 테두리와 아래쪽 두께가 있고, 누르면 그 두께만큼 내려앉는다 */
+.pill{flex:none;min-height:48px;padding:0 16px;border:2.5px solid var(--ink);border-radius:16px;background:var(--paper);color:var(--ink);font-family:var(--hand);font-weight:700;font-size:20px;line-height:1;pointer-events:auto;box-shadow:0 4px 0 var(--ink);transition:transform .08s,box-shadow .08s}
+.pill:active,.edge:active{transform:translateY(4px);box-shadow:0 0 0 var(--ink)}
+.acts{position:absolute;left:0;right:0;bottom:0;z-index:2000;display:flex;justify-content:center;gap:8px;padding-top:10px;padding-bottom:max(14px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));pointer-events:none}
+
+/* 아래에서 올라오는 창: 창마다 바탕색이 다르다 */
+.scrim{position:absolute;inset:0;z-index:3000;background:rgba(59,43,34,.3);opacity:0;pointer-events:none;transition:opacity .25s}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:3001;max-height:80%;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:var(--paper);color:var(--ink);border-radius:24px 24px 0 0;padding-top:16px;padding-bottom:max(22px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));transform:translateY(102%);visibility:hidden;transition:transform .28s cubic-bezier(.2,.8,.2,1),visibility 0s .28s;user-select:text;-webkit-user-select:text}
+.sheet.on{transform:none;visibility:visible;transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+.sheet[data-tone="sage"]{background:var(--sage)}
+.sheet[data-tone="board"]{background:var(--surface)}
+.sheet[data-tone="ink"]{background:var(--ink);color:var(--bg)}
+.sheet[data-tone="ink"] :focus-visible{outline-color:var(--bg)}
+.sheet .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.sheet h2{padding-top:10px;font-family:var(--hand);font-weight:700;font-size:var(--t-head);line-height:1.2;text-wrap:balance}
+.close{flex:none;min-height:48px;padding:0 18px;border:0;border-radius:999px;background:var(--surface);color:var(--ink);line-height:1;transition:transform .12s}
+.sheet[data-tone="sage"] .close,.sheet[data-tone="board"] .close{background:var(--paper)}
+.sheet[data-tone="ink"] .close{background:var(--ink-2);color:var(--bg)}
+.body{display:flex;flex-direction:column;gap:14px}
+.small{font-size:var(--t-small);color:var(--muted)}
+.sheet[data-tone="ink"] .small{color:var(--on-ink-soft)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row.one{flex-wrap:nowrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 22px;border:0;border-radius:999px;font-size:var(--t-body);line-height:1;text-decoration:none;transition:transform .12s}
+.btn svg{flex:none}
+.btn.primary{background:var(--ink);color:var(--bg)}
+.btn.soft{background:var(--surface);color:var(--ink)}
+.btn.paper{background:var(--paper);color:var(--ink)}
+.btn.grow{flex:1 1 auto}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.like[aria-pressed="true"] path{fill:var(--red);stroke:var(--red)}
+.sheet input[type=text]{flex:1;min-width:0;height:48px;padding:0 14px;border:0;border-radius:0;background:var(--surface);color:var(--ink);font-size:var(--t-body)}
+.sheet input::placeholder{color:var(--muted);opacity:1}
+.sheet input.bad{outline:3px solid var(--red);outline-offset:0}
+/* 지령: 테이프로 붙인 쪽지 */
+.note{position:relative;display:flex;flex-direction:column;gap:12px;margin-top:14px;padding:30px 16px 18px;background:var(--paper)}
+.tape{position:absolute;top:-13px;left:50%;width:104px;height:26px;margin-left:-52px;background:var(--tape);transform:rotate(-3deg)}
+.code{display:flex;flex-direction:column;gap:6px}
+.stampmark{align-self:flex-start;margin:4px 0 2px 4px;padding:8px 14px 5px;border:4px solid var(--red);color:var(--red);font-family:var(--hand);font-weight:700;font-size:var(--t-display);line-height:1;transform:rotate(-6deg)}
+.artist{color:var(--muted)}
+/* 마음 날씨 */
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.tile{display:flex;flex-direction:column;align-items:center;padding:12px 2px 10px;border:3px solid transparent;border-radius:0;background:var(--paper);color:var(--ink);font-size:var(--t-body);line-height:1.4;transition:transform .12s}
+.tile svg{width:40px;height:40px;margin-bottom:4px}
+.tile .count{font-size:var(--t-small);color:var(--muted);visibility:hidden}
+.tiles.shown .count{visibility:visible}
+.tile[aria-pressed="true"]{border-color:var(--ink)}
+.result,.care{display:flex;flex-direction:column;gap:12px}
+.care{align-items:flex-start}
+.say,.word{font-family:var(--hand);font-weight:700;line-height:1.2}
+.say{font-size:30px;font-size:clamp(28px,8.4cqi,var(--t-display))}
+.word{font-size:var(--t-head)}
+/* 도장 카드와 교환권 */
+.stamps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;max-width:264px}
+.stamp{display:flex;align-items:center;justify-content:center;aspect-ratio:1;border:3px solid transparent;border-radius:50%;background:var(--surface);color:var(--muted);font-size:var(--t-small);line-height:1}
+.stamp.now{border-color:var(--ink);color:var(--ink)}
+.stamp.on{border-color:var(--red);background:none;color:var(--red);font-family:var(--hand);font-weight:700;font-size:var(--t-body);transform:rotate(-8deg)}
+.voucher{display:flex;flex-direction:column;gap:10px;padding:16px;background:var(--surface)}
+.clock{font-size:var(--t-display);line-height:1;font-variant-numeric:tabular-nums}
+.daily{display:flex;align-items:center;gap:12px}
+.swatch{flex:none;width:48px;height:48px}
+/* 도움 전화 */
+.lines{display:grid;gap:8px}
+.lines a,.place{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;padding:0 16px;color:var(--bg);text-decoration:none}
+.lines a{background:var(--ink-2)}
+.num{font-size:var(--t-head);font-variant-numeric:tabular-nums}
+.poster{display:block;width:100%;height:auto}
+/* 영상: 액자처럼 먹색 테를 두른다 */
+.film{padding:8px;border-radius:16px;background:var(--ink)}
+.film video{display:block;width:100%;height:auto;border-radius:9px;background:#e9e2d4}
+.plain{display:grid;gap:6px;padding-left:1.1em;list-style:disc}
+.demo{display:flex;flex-direction:column;gap:10px;padding:16px;background:var(--surface)}
+.seg{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.seg button{min-height:48px;padding:0;border:0;border-radius:0;background:var(--paper);color:var(--ink);font-size:var(--t-body)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+
+/* ---------- 시안 메모 (넓은 화면에서만) ---------- */
+.memo{flex-direction:column;gap:14px}
+.memo-title,.memo h3{font-family:var(--hand);font-weight:700;line-height:1.15;text-wrap:balance}
+.memo-title{font-size:44px}
+.memo h3{margin-top:14px;font-size:var(--t-head)}
+.memo p,.memo li{max-width:58ch}
+.memo ul{display:grid;gap:8px;padding-left:1.1em;list-style:disc}
+.memo .fine{font-size:var(--t-small);color:var(--page-muted)}
+.memo a{color:inherit;text-underline-offset:.18em}
+.memo a:focus-visible{outline:3px solid var(--page-ink);outline-offset:3px}
+@media (min-width:860px){
+  html,body{height:auto}
+  .page{display:grid;grid-template-columns:minmax(0,1fr) 410px;column-gap:64px;align-items:start;max-width:1080px;height:auto;margin-inline:auto;padding-block:56px 72px;padding-left:max(32px,env(safe-area-inset-left,0px));padding-right:max(32px,env(safe-area-inset-right,0px))}
+  .device{grid-column:2;grid-row:1;position:sticky;top:calc(24px + env(safe-area-inset-top,0px));height:724px;max-height:calc(100vh - 48px);border:10px solid var(--frame);border-radius:44px;overflow:hidden}
+  .memo{display:flex;grid-column:1;grid-row:1;padding-top:8px}
+}
+
+@media (prefers-reduced-motion:no-preference){
+  .bear.walk img{animation:bob .4s ease-in-out infinite alternate}
+  @keyframes bob{from{transform:translateY(0) rotate(-3deg)}to{transform:translateY(-5px) rotate(3deg)}}
+  .bear.idle img{animation:breathe 3.2s ease-in-out infinite}
+  @keyframes breathe{50%{transform:scale(1.014,.986)}}
+  .bear.act img{animation:settle .45s cubic-bezier(.2,1.4,.4,1)}
+  @keyframes settle{from{transform:scale(.92,1.06)}}
+  .wiggle{animation:wiggle .5s ease}
+  @keyframes wiggle{25%{transform:rotate(-5deg)}75%{transform:rotate(5deg)}}
+  .btn:active,.close:active,.tile:active{transform:scale(.96)}
+  .label .dot,.pill.go .dot{animation:pulse 1.6s ease-in-out infinite}
+  /* 할 일이 남은 물건은 윤곽선이 천천히 숨 쉬듯 밝아진다 */
+  .lines g.todo .w{animation:glow 1.8s ease-in-out infinite}
+  @keyframes glow{50%{stroke-opacity:.4}}
+  @keyframes pulse{50%{transform:scale(1.4)}}
+  @keyframes float{0%{transform:translateY(6px);opacity:0}30%{opacity:1}100%{transform:translateY(-16px);opacity:0}}
+  .pop{animation:pop .5s cubic-bezier(.2,1.5,.4,1)}
+  @keyframes pop{0%{transform:scale(1.8) rotate(-14deg);opacity:0}}
+  .hop{animation:hop .5s cubic-bezier(.2,1.5,.4,1)}
+  @keyframes hop{40%{transform:translateY(-10px)}}
+  .rise{animation:rise .4s ease both}
+  .tiles.shown .count{animation:rise .4s ease both}
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}}
+  .shake{animation:shake .32s ease}
+  @keyframes shake{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+  .rainfall path{animation:rain .7s linear infinite}
+  @keyframes rain{to{transform:translateY(8px)}}
+}
+</style>
+</head>
+<body>
+<div class="page" lang="ko">
+  <main class="device">
+    <div class="phone" id="phone">
+
+      <div class="world" id="world">
+        <img class="room-bg" src="img/hideout-bg.webp" width="2400" height="1350" alt="">
+        <span class="glass" id="skyTint" aria-hidden="true"></span>
+        <span class="piece" id="pc-window" style="clip-path:polygon(99px 142px,252px 87px,254px 356px,100px 448px);transform-origin:176px 267px" aria-hidden="true"></span>
+        <span class="piece" id="pc-desk" style="clip-path:polygon(70px 580px,110px 545px,112px 492px,150px 462px,190px 448px,238px 415px,288px 408px,290px 355px,340px 346px,352px 395px,367px 386px,405px 382px,414px 430px,451px 419px,452px 442px,442px 527px,425px 527px,425px 492px,235px 642px,232px 727px,205px 727px,205px 652px,100px 612px,100px 700px,86px 700px,72px 606px);transform-origin:261px 536px" aria-hidden="true"></span>
+        <span class="piece" id="pc-board" style="clip-path:polygon(430px 93px,719px 93px,719px 396px,430px 396px);transform-origin:574px 244px" aria-hidden="true"></span>
+        <span class="piece" id="pc-poster" style="clip-path:polygon(835px 103px,915px 103px,915px 138px,868px 138px,868px 215px,835px 215px);transform-origin:875px 159px" aria-hidden="true"></span>
+        <span class="piece" id="pc-clip3d" style="clip-path:polygon(868px 138px,975px 138px,975px 127px,1003px 127px,1003px 138px,1048px 138px,1048px 222px,1051px 222px,1051px 288px,997px 288px,997px 252px,899px 252px,899px 270px,868px 270px);transform-origin:959px 207px" aria-hidden="true"></span>
+        <span class="piece" id="pc-clip2d" style="clip-path:polygon(899px 254px,995px 254px,995px 290px,1008px 290px,1008px 325px,977px 325px,977px 347px,899px 347px);transform-origin:953px 300px" aria-hidden="true"></span>
+        <span class="piece" id="pc-radio" style="clip-path:polygon(1200px 378px,1211px 378px,1211px 356px,1225px 351px,1270px 355px,1272px 378px,1290px 378px,1290px 322px,1305px 316px,1324px 318px,1325px 264px,1332px 264px,1333px 318px,1339px 326px,1340px 378px,1363px 378px,1363px 477px,1357px 477px,1357px 491px,1340px 491px,1340px 477px,1222px 477px,1222px 491px,1205px 491px,1205px 477px,1200px 477px);transform-origin:1281px 377px" aria-hidden="true"></span>
+        <span class="piece" id="pc-stones" style="clip-path:polygon(1455px 262px,1508px 262px,1512px 345px,1530px 362px,1532px 432px,1556px 455px,1557px 485px,1525px 492px,1507px 535px,1487px 533px,1485px 552px,1420px 545px,1383px 520px,1380px 455px,1407px 435px,1418px 407px,1419px 363px,1438px 348px,1440px 317px,1452px 282px);transform-origin:1468px 407px" aria-hidden="true"></span>
+        <span class="piece" id="pc-phone" style="clip-path:polygon(1487px 533px,1509px 535px,1512px 510px,1530px 490px,1560px 482px,1590px 500px,1598px 520px,1600px 545px,1600px 650px,1540px 652px,1538px 682px,1523px 682px,1522px 650px,1500px 615px,1492px 614px,1488px 608px);transform-origin:1543px 582px" aria-hidden="true"></span>
+        <span class="pin-note" aria-hidden="true"><b>지령</b><span id="boardWeek">2주차</span></span>
+        <span class="pin-done" id="boardDone" aria-hidden="true" hidden>완료</span>
+        <div id="paws" aria-hidden="true"></div>
+        <svg class="lines" viewBox="0 0 1600 900" aria-hidden="true">
+          <g>
+            <g id="ln-window"><polygon class="u" points="99.1,142.3 115.8,135.3 133.2,130.3 149.5,122.4 167.0,117.6 184.0,111.4 201.1,105.7 217.9,98.8 234.7,92.3 252.2,87.0 251.0,104.9 253.4,122.9 253.1,140.8 252.0,158.7 251.7,176.7 251.1,194.6 251.9,212.5 253.2,230.5 253.1,248.4 252.9,266.3 254.3,284.3 252.9,302.2 253.0,320.1 252.2,338.1 254.2,356.3 238.7,365.4 222.8,373.8 207.4,382.9 193.0,393.8 177.8,403.4 161.1,410.4 147.0,421.7 130.6,429.3 115.8,439.5 100.1,448.0 100.0,431.0 99.5,414.0 98.8,397.0 100.3,380.0 100.5,363.0 99.0,346.0 101.2,329.0 100.7,312.0 99.1,295.0 100.1,278.0 98.1,261.0 99.7,244.0 99.4,227.0 99.9,210.0 100.5,193.0 98.8,176.0 100.2,159.0"/><polygon class="w" points="99.1,142.3 115.8,135.3 133.2,130.3 149.5,122.4 167.0,117.6 184.0,111.4 201.1,105.7 217.9,98.8 234.7,92.3 252.2,87.0 251.0,104.9 253.4,122.9 253.1,140.8 252.0,158.7 251.7,176.7 251.1,194.6 251.9,212.5 253.2,230.5 253.1,248.4 252.9,266.3 254.3,284.3 252.9,302.2 253.0,320.1 252.2,338.1 254.2,356.3 238.7,365.4 222.8,373.8 207.4,382.9 193.0,393.8 177.8,403.4 161.1,410.4 147.0,421.7 130.6,429.3 115.8,439.5 100.1,448.0 100.0,431.0 99.5,414.0 98.8,397.0 100.3,380.0 100.5,363.0 99.0,346.0 101.2,329.0 100.7,312.0 99.1,295.0 100.1,278.0 98.1,261.0 99.7,244.0 99.4,227.0 99.9,210.0 100.5,193.0 98.8,176.0 100.2,159.0"/></g>
+            <g id="ln-desk"><polygon class="u" points="70.1,580.2 82.3,567.1 96.4,556.3 109.3,545.0 110.9,527.3 110.9,509.7 111.6,491.5 131.6,477.8 149.7,461.3 169.5,453.7 189.7,447.6 206.8,438.1 222.1,426.1 238.0,415.0 262.9,411.1 287.3,408.0 288.5,390.3 288.7,372.6 290.0,354.8 314.8,349.2 339.2,346.2 345.0,370.7 351.9,394.9 367.0,386.1 385.8,382.4 404.2,382.2 410.6,405.8 413.9,429.7 432.7,425.3 450.6,419.0 451.4,441.9 451.1,459.1 447.3,475.9 447.5,493.2 442.3,509.8 442.0,527.8 424.4,527.0 426.7,509.5 424.8,491.8 412.4,503.9 398.4,514.1 384.0,523.8 371.4,535.8 356.3,544.5 343.7,556.4 329.2,566.0 316.4,577.7 303.6,589.3 288.7,598.4 276.8,611.2 261.5,619.8 249.0,631.8 235.7,642.0 235.4,659.0 234.0,676.0 234.1,693.0 231.8,710.0 232.0,726.6 204.6,727.0 204.0,708.2 205.6,689.5 205.3,670.8 205.2,651.4 187.2,646.2 169.6,639.8 152.6,631.8 135.6,623.8 117.4,618.9 100.2,612.0 101.5,629.6 100.7,647.2 99.2,664.8 100.9,682.4 100.0,700.3 85.9,700.0 82.8,681.3 81.4,662.3 79.0,643.4 75.2,624.7 72.0,606.0"/><polygon class="w" points="70.1,580.2 82.3,567.1 96.4,556.3 109.3,545.0 110.9,527.3 110.9,509.7 111.6,491.5 131.6,477.8 149.7,461.3 169.5,453.7 189.7,447.6 206.8,438.1 222.1,426.1 238.0,415.0 262.9,411.1 287.3,408.0 288.5,390.3 288.7,372.6 290.0,354.8 314.8,349.2 339.2,346.2 345.0,370.7 351.9,394.9 367.0,386.1 385.8,382.4 404.2,382.2 410.6,405.8 413.9,429.7 432.7,425.3 450.6,419.0 451.4,441.9 451.1,459.1 447.3,475.9 447.5,493.2 442.3,509.8 442.0,527.8 424.4,527.0 426.7,509.5 424.8,491.8 412.4,503.9 398.4,514.1 384.0,523.8 371.4,535.8 356.3,544.5 343.7,556.4 329.2,566.0 316.4,577.7 303.6,589.3 288.7,598.4 276.8,611.2 261.5,619.8 249.0,631.8 235.7,642.0 235.4,659.0 234.0,676.0 234.1,693.0 231.8,710.0 232.0,726.6 204.6,727.0 204.0,708.2 205.6,689.5 205.3,670.8 205.2,651.4 187.2,646.2 169.6,639.8 152.6,631.8 135.6,623.8 117.4,618.9 100.2,612.0 101.5,629.6 100.7,647.2 99.2,664.8 100.9,682.4 100.0,700.3 85.9,700.0 82.8,681.3 81.4,662.3 79.0,643.4 75.2,624.7 72.0,606.0"/></g>
+            <g id="ln-board"><polygon class="u" points="430.0,93.1 447.0,93.4 464.0,93.8 481.0,94.4 498.0,92.7 515.0,92.5 532.0,91.5 549.0,92.8 566.0,92.8 583.0,91.9 600.0,93.5 617.0,94.4 634.0,94.0 651.0,94.5 668.0,94.4 685.0,94.5 702.0,93.5 719.0,93.0 718.6,110.8 717.4,128.6 720.5,146.5 720.6,164.3 719.6,182.1 718.6,199.9 718.5,217.8 720.3,235.6 718.7,253.4 718.7,271.2 718.3,289.1 717.6,306.9 717.9,324.7 719.7,342.5 720.3,360.4 718.2,378.2 719.0,395.2 702.0,395.7 685.0,394.6 668.0,397.7 651.0,395.2 634.0,395.6 617.0,394.8 600.0,396.6 583.0,395.0 566.0,396.9 549.0,397.7 532.0,394.7 515.0,395.4 498.0,394.9 481.0,397.3 464.0,397.5 447.0,397.6 429.6,396.0 430.4,378.2 428.6,360.4 429.9,342.5 431.4,324.7 429.2,306.9 428.5,289.1 428.7,271.2 430.9,253.4 431.4,235.6 431.1,217.8 429.9,199.9 429.3,182.1 430.9,164.3 428.8,146.5 431.2,128.6 431.6,110.8"/><polygon class="w" points="430.0,93.1 447.0,93.4 464.0,93.8 481.0,94.4 498.0,92.7 515.0,92.5 532.0,91.5 549.0,92.8 566.0,92.8 583.0,91.9 600.0,93.5 617.0,94.4 634.0,94.0 651.0,94.5 668.0,94.4 685.0,94.5 702.0,93.5 719.0,93.0 718.6,110.8 717.4,128.6 720.5,146.5 720.6,164.3 719.6,182.1 718.6,199.9 718.5,217.8 720.3,235.6 718.7,253.4 718.7,271.2 718.3,289.1 717.6,306.9 717.9,324.7 719.7,342.5 720.3,360.4 718.2,378.2 719.0,395.2 702.0,395.7 685.0,394.6 668.0,397.7 651.0,395.2 634.0,395.6 617.0,394.8 600.0,396.6 583.0,395.0 566.0,396.9 549.0,397.7 532.0,394.7 515.0,395.4 498.0,394.9 481.0,397.3 464.0,397.5 447.0,397.6 429.6,396.0 430.4,378.2 428.6,360.4 429.9,342.5 431.4,324.7 429.2,306.9 428.5,289.1 428.7,271.2 430.9,253.4 431.4,235.6 431.1,217.8 429.9,199.9 429.3,182.1 430.9,164.3 428.8,146.5 431.2,128.6 431.6,110.8"/></g>
+            <g id="ln-poster"><polygon class="u" points="835.0,102.8 855.0,104.2 875.0,104.0 895.0,104.7 915.4,103.0 915.5,120.5 915.0,138.5 891.5,139.4 867.8,138.0 867.7,157.2 867.7,176.5 866.8,195.8 868.0,215.1 834.5,215.0 834.2,196.3 835.1,177.7 834.3,159.0 834.1,140.3 835.6,121.7"/><polygon class="w" points="835.0,102.8 855.0,104.2 875.0,104.0 895.0,104.7 915.4,103.0 915.5,120.5 915.0,138.5 891.5,139.4 867.8,138.0 867.7,157.2 867.7,176.5 866.8,195.8 868.0,215.1 834.5,215.0 834.2,196.3 835.1,177.7 834.3,159.0 834.1,140.3 835.6,121.7"/></g>
+            <g id="ln-clip3d"><polygon class="u" points="868.0,137.6 885.8,137.5 903.7,137.0 921.5,138.3 939.3,137.7 957.2,137.1 974.5,138.0 975.0,127.2 1003.8,127.0 1003.0,138.6 1025.5,139.1 1048.4,138.0 1049.7,159.0 1047.0,180.0 1049.2,201.0 1048.0,222.5 1051.8,222.0 1052.7,244.0 1051.1,266.0 1051.0,287.6 1033.0,287.2 1015.0,287.4 996.2,288.0 996.9,270.0 997.0,251.3 977.4,251.4 957.8,251.6 938.2,252.1 918.6,252.2 899.3,252.0 899.0,269.9 868.9,270.0 869.1,251.1 867.6,232.3 869.5,213.4 868.4,194.6 868.4,175.7 868.1,156.9"/><polygon class="w" points="868.0,137.6 885.8,137.5 903.7,137.0 921.5,138.3 939.3,137.7 957.2,137.1 974.5,138.0 975.0,127.2 1003.8,127.0 1003.0,138.6 1025.5,139.1 1048.4,138.0 1049.7,159.0 1047.0,180.0 1049.2,201.0 1048.0,222.5 1051.8,222.0 1052.7,244.0 1051.1,266.0 1051.0,287.6 1033.0,287.2 1015.0,287.4 996.2,288.0 996.9,270.0 997.0,251.3 977.4,251.4 957.8,251.6 938.2,252.1 918.6,252.2 899.3,252.0 899.0,269.9 868.9,270.0 869.1,251.1 867.6,232.3 869.5,213.4 868.4,194.6 868.4,175.7 868.1,156.9"/></g>
+            <g id="ln-clip2d"><polygon class="u" points="899.0,254.2 918.2,252.6 937.4,252.6 956.6,254.1 975.8,253.0 994.5,254.0 995.6,272.0 995.0,289.4 1007.6,290.0 1009.1,307.5 1008.0,324.8 977.5,325.0 977.0,347.8 957.5,348.7 938.0,348.2 918.5,346.1 898.9,347.0 898.7,328.4 898.1,309.8 898.2,291.2 899.6,272.6"/><polygon class="w" points="899.0,254.2 918.2,252.6 937.4,252.6 956.6,254.1 975.8,253.0 994.5,254.0 995.6,272.0 995.0,289.4 1007.6,290.0 1009.1,307.5 1008.0,324.8 977.5,325.0 977.0,347.8 957.5,348.7 938.0,348.2 918.5,346.1 898.9,347.0 898.7,328.4 898.1,309.8 898.2,291.2 899.6,272.6"/></g>
+            <g id="ln-radio"><polygon class="u" points="1200.0,377.8 1211.4,378.0 1210.9,355.8 1225.0,351.5 1247.4,353.6 1270.1,355.0 1272.0,377.3 1290.7,378.0 1291.2,359.3 1289.2,340.7 1289.8,321.5 1304.9,316.5 1323.8,318.0 1324.8,300.0 1323.4,282.0 1325.0,264.8 1332.7,264.0 1333.7,282.0 1331.9,300.0 1333.3,317.8 1338.4,326.0 1339.4,343.3 1340.4,360.7 1340.0,377.4 1362.6,378.0 1363.4,397.8 1363.6,417.6 1362.5,437.4 1364.6,457.2 1363.0,476.3 1356.3,477.0 1357.0,490.8 1339.3,491.0 1340.0,476.5 1320.3,478.0 1300.7,477.7 1281.0,475.8 1261.3,475.6 1241.7,476.2 1221.8,477.0 1222.0,491.2 1205.3,491.0 1205.0,476.2 1199.6,477.0 1200.2,457.2 1201.2,437.4 1200.9,417.6 1200.1,397.8"/><polygon class="w" points="1200.0,377.8 1211.4,378.0 1210.9,355.8 1225.0,351.5 1247.4,353.6 1270.1,355.0 1272.0,377.3 1290.7,378.0 1291.2,359.3 1289.2,340.7 1289.8,321.5 1304.9,316.5 1323.8,318.0 1324.8,300.0 1323.4,282.0 1325.0,264.8 1332.7,264.0 1333.7,282.0 1331.9,300.0 1333.3,317.8 1338.4,326.0 1339.4,343.3 1340.4,360.7 1340.0,377.4 1362.6,378.0 1363.4,397.8 1363.6,417.6 1362.5,437.4 1364.6,457.2 1363.0,476.3 1356.3,477.0 1357.0,490.8 1339.3,491.0 1340.0,476.5 1320.3,478.0 1300.7,477.7 1281.0,475.8 1261.3,475.6 1241.7,476.2 1221.8,477.0 1222.0,491.2 1205.3,491.0 1205.0,476.2 1199.6,477.0 1200.2,457.2 1201.2,437.4 1200.9,417.6 1200.1,397.8"/></g>
+            <g id="ln-stones"><polygon class="u" points="1455.0,261.4 1472.7,262.8 1490.3,262.0 1507.2,262.0 1509.4,282.7 1508.4,303.6 1511.9,324.2 1511.5,345.5 1530.9,362.0 1528.9,379.5 1531.2,397.0 1533.0,414.5 1532.1,431.9 1556.7,455.0 1557.1,485.3 1525.7,492.3 1517.3,514.0 1506.9,535.6 1486.6,533.0 1484.9,552.8 1463.3,550.4 1441.6,547.7 1420.3,544.6 1400.6,533.9 1382.8,520.0 1381.4,498.4 1381.5,476.6 1379.7,454.5 1407.4,435.1 1418.1,407.0 1418.6,385.0 1419.1,363.1 1437.1,347.9 1439.6,316.9 1446.0,299.5 1452.0,282.0"/><polygon class="w" points="1455.0,261.4 1472.7,262.8 1490.3,262.0 1507.2,262.0 1509.4,282.7 1508.4,303.6 1511.9,324.2 1511.5,345.5 1530.9,362.0 1528.9,379.5 1531.2,397.0 1533.0,414.5 1532.1,431.9 1556.7,455.0 1557.1,485.3 1525.7,492.3 1517.3,514.0 1506.9,535.6 1486.6,533.0 1484.9,552.8 1463.3,550.4 1441.6,547.7 1420.3,544.6 1400.6,533.9 1382.8,520.0 1381.4,498.4 1381.5,476.6 1379.7,454.5 1407.4,435.1 1418.1,407.0 1418.6,385.0 1419.1,363.1 1437.1,347.9 1439.6,316.9 1446.0,299.5 1452.0,282.0"/></g>
+            <g id="ln-phone"><polygon class="u" points="1486.9,533.6 1508.6,534.9 1512.6,510.5 1529.8,489.4 1560.2,481.7 1574.5,491.8 1590.4,499.9 1597.8,520.0 1599.7,545.0 1600.6,562.5 1601.3,580.0 1598.6,597.5 1599.0,615.0 1600.1,632.5 1600.0,649.5 1580.0,650.9 1560.0,652.8 1539.5,652.0 1538.0,682.6 1523.4,682.0 1521.3,650.5 1510.3,632.9 1500.0,615.2 1492.5,613.7 1487.2,608.0 1488.7,589.2 1489.0,570.5 1487.5,551.7"/><polygon class="w" points="1486.9,533.6 1508.6,534.9 1512.6,510.5 1529.8,489.4 1560.2,481.7 1574.5,491.8 1590.4,499.9 1597.8,520.0 1599.7,545.0 1600.6,562.5 1601.3,580.0 1598.6,597.5 1599.0,615.0 1600.1,632.5 1600.0,649.5 1580.0,650.9 1560.0,652.8 1539.5,652.0 1538.0,682.6 1523.4,682.0 1521.3,650.5 1510.3,632.9 1500.0,615.2 1492.5,613.7 1487.2,608.0 1488.7,589.2 1489.0,570.5 1487.5,551.7"/></g>
+          </g>
+        </svg>
+
+        <button class="obj" id="oWindow" data-k="window" style="left:85px;top:80px;width:180px;height:330px" aria-label="창문. 오늘 마음 날씨"></button>
+        <button class="obj" id="oDesk" data-k="desk" style="left:60px;top:430px;width:400px;height:285px" aria-label="책상. 요원 도장 카드"></button>
+        <button class="obj" id="oBoard" data-k="board" style="left:425px;top:85px;width:300px;height:320px" aria-label="암호판. 이번 주 지령 보기"></button>
+        <button class="obj" id="oPoster" data-k="poster" style="left:808px;top:92px;width:110px;height:128px" aria-label="쪽지. 룰루랄라 포스터 보기"></button>
+        <button class="obj" id="oClip3d" data-k="clip3d" style="left:868px;top:125px;width:186px;height:165px" aria-label="지도. 늘곰 인형 영상 보기"></button>
+        <button class="obj" id="oClip2d" data-k="clip2d" style="left:895px;top:252px;width:116px;height:100px" aria-label="사진. 늘곰 색연필 영상 보기"></button>
+        <button class="obj" id="oRadio" data-k="radio" style="left:1190px;top:255px;width:180px;height:240px" aria-label="무전기 라디오. 오늘의 추천곡"></button>
+        <button class="obj" id="oStones" data-k="stones" style="left:1385px;top:250px;width:180px;height:290px" aria-label="걱정돌 받침"></button>
+        <button class="obj" id="oPhone" data-k="phone" style="left:1470px;top:480px;width:130px;height:205px" aria-label="전화. 도움이 필요할 때"></button>
+
+        <span class="label" style="left:262px;top:226px;transform:rotate(-5deg)" aria-hidden="true"><span id="windowTag">창문</span><i class="dot" id="dotWindow" hidden></i></span>
+        <span class="label" style="left:92px;top:714px;transform:rotate(-3deg)" aria-hidden="true">책상<i class="dot" id="dotDesk" hidden></i></span>
+        <span class="label" id="lbBoard" style="left:346px;top:300px;transform:rotate(-4deg)" aria-hidden="true">암호판<i class="dot" id="dotBoard" hidden></i></span>
+        <span class="label" style="left:1106px;top:404px;transform:rotate(-4deg)" aria-hidden="true">라디오</span>
+        <span class="label" style="left:1378px;top:218px;transform:rotate(-3deg)" aria-hidden="true"><span id="stonesTag">걱정돌</span></span>
+        <span class="label" style="left:1466px;top:692px;transform:rotate(-2deg)" aria-hidden="true">도움 전화</span>
+
+        <div class="bear idle" id="bear">
+          <div class="scale" id="bearScale">
+            <div class="ground" id="bearShadow"></div>
+            <div class="flip" id="bearFlip"><img id="bearImg" src="img/sit.webp" alt="" draggable="false"></div>
+            <div class="bubble" id="bubble" role="status"></div>
+          </div>
+        </div>
+      </div>
+
+      <button class="edge l" id="edgeL" type="button" aria-label="왼쪽으로 가기" hidden><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button class="edge r" id="edgeR" type="button" aria-label="오른쪽으로 가기" hidden><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+
+      <header class="hud">
+        <div class="who">
+          <h1>늘곰 지하 은신처</h1>
+          <p id="hudLine"></p>
+        </div>
+        <button class="pill" id="infoBtn" type="button">안내</button>
+      </header>
+
+      <div class="acts" role="group" aria-label="바로 가기">
+        <button class="pill go" type="button" data-go="board" aria-label="지령 보러 가기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4.5h12v15.5H6z"/><path d="M9.5 3v3M14.5 3v3"/><path d="M9 10h6M9 13.5h6M9 17h3.5"/></svg><span>지령</span><i class="dot" id="goBoard" hidden></i></button>
+        <button class="pill go" type="button" data-go="window" aria-label="마음 날씨 고르러 가기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="2.8"/><path d="M8 2.2v1.4M2.2 8h1.4M3.9 3.9l1 1M12.1 3.9l-1 1"/><path d="M9.5 19.5h8.2a3.3 3.3 0 0 0 .5-6.6 4.8 4.8 0 0 0-9.2.9 2.9 2.9 0 0 0 .5 5.7z"/></svg><span>날씨</span><i class="dot" id="goWindow" hidden></i></button>
+        <button class="pill go" type="button" data-go="desk" aria-label="도장 카드 보러 가기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 3.5h5v4.2l2 3.8h-9l2-3.8z"/><path d="M5.5 11.5h13v4h-13z"/><path d="M4 20h16"/></svg><span>도장</span><i class="dot" id="goDesk" hidden></i></button>
+        <button class="pill go" type="button" data-go="radio" aria-label="추천곡 들으러 가기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 17.5V5.5l9.5-2v12"/><ellipse cx="6.6" cy="17.6" rx="2.5" ry="2"/><ellipse cx="16.1" cy="15.6" rx="2.5" ry="2"/></svg><span>곡</span></button>
+        <button class="pill go" type="button" data-go="phone" aria-label="도움 전화 보기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 4h3.6l1.8 4.6-2.3 1.4a11 11 0 0 0 5.2 5.2l1.4-2.3 4.6 1.8v3.6a1.2 1.2 0 0 1-1.3 1.2A15.5 15.5 0 0 1 4 5.300a1.2 1.2 0 0 1 1.2-1.3z"/></svg><span>도움</span></button>
+      </div>
+
+      <div class="scrim" id="scrim"></div>
+      <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" tabindex="-1">
+        <div class="top">
+          <h2 id="sheetTitle"></h2>
+          <button class="close" id="sheetClose" type="button">닫기</button>
+        </div>
+        <div class="body" id="sheetBody"></div>
+      </section>
+    </div>
+  </main>
+
+  <aside class="memo">
+    <h2 class="memo-title">늘곰 지하 은신처, 옆으로 긴 방 시안</h2>
+    <p>선생님이 고른 '지하 은신처' 그림을 그대로 방으로 만들었습니다. 가구까지 그려진 배경 한 장 위에 누르는 자리를 얹었고, 늘곰이 걸어가면 방이 옆으로 따라 움직입니다. 숫자와 곡은 예시이고, 여기서 누른 것은 어디에도 저장되지 않습니다.</p>
+    <h3>달라진 것</h3>
+    <ul>
+      <li>방이 화면보다 옆으로 깁니다. 바닥을 누르거나 양옆의 화살표를 누르면 늘곰이 걸어가고 방이 따라옵니다.</li>
+      <li>아래에 바로 가기 다섯 개(지령, 날씨, 도장, 곡, 도움)가 있습니다. 누르면 늘곰이 그 물건으로 걸어가 창을 엽니다. 아직 안 한 일에는 빨간 점이 붙습니다.</li>
+      <li>누를 수 있는 물건에는 흰 윤곽선이 둘러져 있고, 이름은 물건 옆에 손글씨로 적혀 있습니다. 누르면 그 물건만 살짝 커지고 밝아집니다.</li>
+      <li>암호판은 지령, 창문은 마음 날씨, 책상은 도장 카드, 무전기 라디오는 추천곡, 돌 받침은 걱정돌, 빨간 전화는 도움 전화입니다.</li>
+      <li>지도 게시판의 종이 세 장을 따로 누를 수 있습니다. 왼쪽 쪽지는 룰루랄라 포스터, 큰 지도는 인형 영상, 아래 사진은 색연필 영상입니다. 영상은 누를 때만 불러옵니다.</li>
+      <li>곰은 새로 받은 16자세와 걷는 그림을 씁니다.</li>
+    </ul>
+    <h3>정해야 할 것</h3>
+    <ul>
+      <li>한 화면에 방 전체가 보이지 않습니다. 처음에는 암호판이 보이는 자리에서 시작합니다.</li>
+      <li>돌탑이 쌓이는 모습은 아직 그리지 않았습니다. 숫자로만 보입니다.</li>
+      <li>배포된 학생 화면에는 반영하지 않았습니다.</li>
+    </ul>
+    <p class="fine">이 시안 페이지 안에서는 전화 연결이 되지 않을 수 있고, 듣기 버튼은 유튜브로 넘어가지 않습니다.</p>
+  </aside>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var $=function(id){return document.getElementById(id)};
+  var W=1600, WH=900, WEEKS_TOTAL=3, NEED=2, DEMO_CODE='늘곰', K=0.8;
+  var MOODS={sun:'맑음',cloud:'구름',rain:'비',storm:'번개'};
+  var SAY={sun:'오늘 맑은 요원,',cloud:'오늘 구름 낀 요원,',rain:'오늘 비 오는 요원,',storm:'오늘 번개 치는 요원,'};
+  var IC='<svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">';
+  var CLOUD='d="M14 34h21a7.5 7.5 0 0 0 1-14.9 10 10 0 0 0-19.4-1.6A8.3 8.3 0 0 0 14 34z"';
+  var ICON={
+    sun:IC+'<circle cx="24" cy="24" r="8"/><path d="M24 6v5M24 37v5M6 24h5M37 24h5M11.3 11.3l3.5 3.5M33.2 33.2l3.5 3.5M36.7 11.3l-3.5 3.5M14.8 33.2l-3.5 3.5"/></svg>',
+    cloud:IC+'<path '+CLOUD+'/></svg>',
+    rain:IC+'<path transform="translate(0 -6)" '+CLOUD+'/><path d="M17 35l-2.5 7M25 35l-2.5 7M33 35l-2.5 7"/></svg>',
+    storm:IC+'<path transform="translate(0 -6)" '+CLOUD+'/><path d="M26 32l-6 7.5h7l-4 6.5"/></svg>'
+  };
+  var PLAY='<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M7 4.5v15l12-7.5z" fill="currentColor"/></svg>';
+  var HEART='<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+  /* 곰 그림: [가로, 세로] (그림 픽셀). 화면에는 K 배로 줄여 쓴다 */
+  var SPR={"stand":[195,217],"apple":[166,197],"back":[250,123],"belly":[238,115],"bird":[169,221],"front1":[183,225],"front2":[160,202],"honey":[172,193],"hooray":[196,214],"med":[163,197],"nap":[237,154],"read":[231,164],"sit":[184,204],"walk1":[158,230],"walk2":[180,199],"walk3":[160,197]};
+  var POSE_AT={board:'read',window:'stand',radio:'belly',desk:'apple',stones:'med',phone:'stand',poster:'stand',clip3d:'stand',clip2d:'stand'};
+  var REST=['apple','honey','belly','nap','back','med','bird'];
+  var WX={sun:'맑음',cloud:'구름',rain:'비',storm:'번개'};
+  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function replay(el,cls){el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls)}
+  function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+
+  /* ---------- 이 시안 전용 기록 (실제 본부 기록과 다른 이름, 서버로 보내지 않는다) ---------- */
+  var KEY='neulgom-hideout-design';
+  var ls=(function(){try{var o=JSON.parse(localStorage.getItem(KEY)||'{}');return o&&typeof o==='object'?o:{}}catch(e){return {}}})();
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(ls))}catch(e){}}
+  function defaults(){ls.stamps=ls.stamps||{};ls.heart=ls.heart||{};ls.mood=ls.mood||{};if(typeof ls.week!=='number'||ls.week>WEEKS_TOTAL+1)ls.week=2;Object.keys(ls.stamps).forEach(function(k){if(+k>WEEKS_TOTAL)delete ls.stamps[k]})}
+  defaults();
+
+  /* ---------- 예시 상태 ---------- */
+  var now=new Date(), z=function(n){return (n<10?'0':'')+n};
+  var TODAY=now.getFullYear()+'-'+z(now.getMonth()+1)+'-'+z(now.getDate());
+  var S;
+  function seed(){
+    S={today:37,hearts:12,done:23,stonesToday:3,stonesTotal:34,moods:{sun:14,cloud:9,rain:5,storm:2},
+      song:{title:'수고했어, 오늘도',artist:'옥상달빛',note:'시험 기간에 숨 한 번 고르기 좋은 노래.'},
+      weekName:{1:'나에게 인사하기',2:'고마운 사람 찾기',3:'5분 산책'},
+      color:'#9ad1c0',colorName:'민트색',word:'군밤'};
+    if(ls.heart[TODAY])S.hearts++;
+    if(ls.mood[TODAY])S.moods[ls.mood[TODAY]]++;
+    if(ls.stone===TODAY){S.stonesToday++;S.stonesTotal++}
+  }
+  seed();
+  function stampCount(){return Object.keys(ls.stamps).length}
+  function topMood(){var best='sun',n=-1,k;for(k in MOODS){if((S.moods[k]||0)>n){n=S.moods[k]||0;best=k}}return best}
+
+  /* ---------- 방 크기 맞추기 ---------- */
+  var phone=$('phone'), world=$('world'), scale=1, P={}, cam=0, pan=0, pos=null, PW=390;
+  /* 걸을 수 있는 바닥: 책상과 바닥 뚜껑, 쇠창살, 전화 탁자 앞은 조금 더 앞쪽부터 */
+  function floorTop(x){return x<470?738:(x>1290?722:500)}
+  function fit(p){var x=clamp(p.x,P.minX,P.maxX);return {x:x,y:clamp(p.y,Math.max(P.minY,floorTop(x)),P.maxY)}}
+  var LBL=[];
+  function measureLabels(){LBL=Array.prototype.map.call(document.querySelectorAll('.label'),function(el){return {el:el,l:el.offsetLeft,r:el.offsetLeft+el.offsetWidth,cut:null}})}
+  function camFor(){return clamp(pos.x*scale-PW/2,0,Math.max(0,W*scale-PW))}
+  function layout(){
+    PW=phone.clientWidth;var ph=phone.clientHeight;
+    scale=ph/WH;
+    P={minX:70,maxX:1450,minY:500,maxY:800,
+      window:{x:330,y:752},desk:{x:410,y:765},board:{x:575,y:525},poster:{x:870,y:525},clip3d:{x:960,y:525},clip2d:{x:940,y:532},
+      radio:{x:1262,y:580},stones:{x:1262,y:612},phone:{x:1380,y:775},start:{x:550,y:612}};
+    P.start.x=Math.min(550,346+(PW/2-16)/scale);      /* 처음에는 암호판과 그 글자가 다 보이는 자리 */
+    if(!pos)pos={x:P.start.x,y:P.start.y};
+    pos=fit(pos);cam=camFor();measureLabels();applyView();
+    drawBear();drawPaws();
+  }
+  function applyView(){
+    world.style.transform='translate('+(-cam).toFixed(1)+'px,'+pan+'px) scale('+scale+')';
+    $('edgeL').hidden=cam<8;$('edgeR').hidden=cam>W*scale-PW-8;
+    for(var i=0;i<LBL.length;i++){var L=LBL[i], a=L.l*scale-cam, b=L.r*scale-cam, cutNow=a<0||b>PW;if(cutNow!==L.cut){L.cut=cutNow;L.el.classList.toggle('cut',cutNow)}}
+  }
+  /* 창이 올라오면 늘곰이 가려지지 않게 방을 위로 민다 */
+  function panFor(sheetH){var room=phone.clientHeight-sheetH;pan=sheetH?Math.min(0,room-24-pos.y*scale):0;applyView()}
+
+  /* ---------- 다른 요원의 흔적: 발자국 ---------- */
+  function rng(seedText){var h=2166136261;for(var i=0;i<seedText.length;i++){h^=seedText.charCodeAt(i);h=Math.imul(h,16777619)}return function(){h^=h<<13;h^=h>>>17;h^=h<<5;return ((h>>>0)%10000)/10000}}
+  function drawPaws(){
+    var n=Math.min(Math.max(S.today-1,0),28), r=rng(TODAY), out='', made=0, guard=0;
+    var blocks=[[330,640,625,770],[1270,575,1505,715]];
+    while(made<n&&guard++<500){
+      var x=90+r()*1420, y=floorTop(x)+10+r()*(810-floorTop(x)-10), rot=Math.round(r()*360), hit=false;
+      for(var i=0;i<blocks.length;i++){var b=blocks[i];if(x>b[0]&&x<b[2]&&y>b[1]&&y<b[3])hit=true}
+      if(hit)continue;
+      out+='<svg class="paw" style="left:'+x.toFixed(0)+'px;top:'+y.toFixed(0)+'px;transform:rotate('+rot+'deg);z-index:2" viewBox="0 0 18 18"><g fill="#4a3a2c"><ellipse cx="9" cy="12" rx="5" ry="4"/><circle cx="3.5" cy="6.5" r="2"/><circle cx="9" cy="4" r="2.1"/><circle cx="14.5" cy="6.5" r="2"/></g></svg>';
+      made++;
+    }
+    $('paws').innerHTML=out;
+  }
+
+  /* ---------- 늘곰 ---------- */
+  var bear=$('bear'), bearImg=$('bearImg'), flipEl=$('bearFlip'), shadow=$('bearShadow'), bubble=$('bubble');
+  var target=null, goal=null, dir=1, pose='sit', poseTimer=null, cur='', step=0, stepT=0, lastInput=0, resting=false, SPEED=330;
+  Object.keys(SPR).forEach(function(n){var i=new Image();i.src='img/'+n+'.webp'});      /* 그림 미리 불러오기 */
+  function show(name,flip){
+    if(name!==cur){
+      cur=name;var w=SPR[name][0]*K, h=SPR[name][1]*K;
+      bearImg.setAttribute('src','img/'+name+'.webp');
+      bearImg.style.width=w+'px';bearImg.style.height=h+'px';bearImg.style.left=(-w/2)+'px';bearImg.style.top=(4-h)+'px';
+      shadow.style.width=(w*.8)+'px';shadow.style.left=(-w*.4)+'px';bubble.style.bottom=(h+16)+'px';
+    }
+    flipEl.style.transform='scaleX('+(flip||1)+')';
+  }
+  function drawBear(){
+    bear.style.left=pos.x+'px';bear.style.top=pos.y+'px';bear.style.zIndex=bubble.classList.contains('on')?1600:Math.round(pos.y);      /* 말하는 동안에는 말풍선이 이름표보다 위 */
+    var s=0.8+0.36*((pos.y-P.minY)/Math.max(1,P.maxY-P.minY));
+    $('bearScale').style.transform='scale('+s.toFixed(3)+')';
+    if(!target)show(pose,1);
+    var cls='bear '+(target?'walk':(pose==='sit'||pose==='stand'?'idle':'act'));
+    if(bear.className!==cls)bear.className=cls;
+    var vx=pos.x*scale-cam, shift=(clamp(vx,128,PW-128)-vx)/scale;bubble.style.marginLeft=(shift/s)+'px';
+  }
+  function setPose(name,ms,after){
+    clearTimeout(poseTimer);pose=name;resting=false;
+    if(ms)poseTimer=setTimeout(function(){pose=after||'sit';drawBear()},ms);
+    if(pos)drawBear();
+  }
+  function walkTo(x,y,then,keepBubble){
+    if(!keepBubble)closeBubble();
+    clearTimeout(poseTimer);resting=false;
+    target=fit({x:x,y:y});goal=then||null;
+    if(Math.abs(target.x-pos.x)>4)dir=target.x<pos.x?-1:1;
+    step=0;stepT=0;
+    if(reduce){pos={x:target.x,y:target.y};target=null;cam=camFor();applyView();arrive();return}
+    drawBear();
+  }
+  function arrive(){var g=goal;goal=null;if(g)g();else setPose('stand',1500,'sit');drawBear()}
+  var last=0;
+  function tick(t){
+    var dt=Math.min(.05,(t-last)/1000);last=t;
+    if(target){
+      var dx=target.x-pos.x, dy=target.y-pos.y, d=Math.sqrt(dx*dx+dy*dy), st=SPEED*dt;
+      if(d<=st){pos={x:target.x,y:target.y};target=null;arrive()}
+      else{
+        pos.x+=dx/d*st;pos.y+=dy/d*st;stepT+=dt;if(stepT>.17){stepT=0;step=(step+1)%4}
+        drawBear();
+        if(Math.abs(dx)>=Math.abs(dy)*.8)show(['walk1','walk2','walk3','walk2'][step],dir);          /* 옆으로 걷기 */
+        else show(step%2?'front1':'front2',step>1?-1:1);                            /* 앞뒤로 걷기 */
+      }
+    }else if(!current&&!resting&&pose==='sit'&&t-lastInput>14000){
+      /* 한동안 가만히 두면 알아서 쉰다 */
+      resting=true;pose=REST[Math.floor(Math.random()*REST.length)];drawBear();
+      poseTimer=setTimeout(function(){if(resting){resting=false;pose='sit';lastInput=performance.now();drawBear()}},6500);
+    }
+    /* 방이 늘곰을 따라 옆으로 움직인다 */
+    var want=camFor();if(Math.abs(want-cam)>.4){cam+=(want-cam)*Math.min(1,dt*7);applyView()}
+    requestAnimationFrame(tick);
+  }
+  var bubbleTimer=null;
+  function say(text,ms){bubble.textContent=text;bubble.classList.add('on');bear.style.zIndex=1600;clearTimeout(bubbleTimer);bubbleTimer=setTimeout(closeBubble,ms||2800)}
+  function closeBubble(){clearTimeout(bubbleTimer);bubble.classList.remove('on');if(pos)bear.style.zIndex=Math.round(pos.y)}
+
+  phone.addEventListener('pointerdown',function(){lastInput=performance.now()},true);
+  /* 늘곰을 누르면 쉬는 모습을 보여 준다. 늘곰이 물건 앞에 서 있어도 늘곰이 먼저 눌린다 */
+  function onBear(e){var r=world.getBoundingClientRect(), x=(e.clientX-r.left)/scale, y=(e.clientY-r.top)/scale;return !target&&!current&&Math.abs(x-pos.x)<70&&y<pos.y+10&&y>pos.y-165}
+  world.addEventListener('click',function(e){
+    if(!onBear(e))return;e.stopPropagation();e.preventDefault();
+    var n=REST[Math.floor(Math.random()*REST.length)];act(n,5000,REST_SAY[n]);
+  },true);
+  /* 바닥을 누르면 그곳으로 걸어간다 */
+  world.addEventListener('pointerdown',function(e){
+    if(e.target.closest('.obj'))return;
+    var r=world.getBoundingClientRect(), x=(e.clientX-r.left)/scale, y=(e.clientY-r.top)/scale;
+    if(onBear(e))return;                              /* 늘곰을 눌렀다 */
+    if(y<440)return;                                  /* 벽은 걸을 수 없다 */
+    ls.moved=true;save();walkTo(x,y);
+  });
+  /* 물건을 누르면 그 앞으로 걸어가서 창을 연다 */
+  Array.prototype.forEach.call(document.querySelectorAll('.obj'),function(o){
+    o.addEventListener('click',function(){
+      var k=o.dataset.k, p=P[k];ls.moved=true;save();
+      if(k==='stones'&&ls.week<4){walkTo(p.x,p.y,function(){setPose('sit');say('걱정돌은 작전이 끝나면 열려요.')});return}
+      walkTo(p.x,p.y,function(){setPose(POSE_AT[k]);openSheet(k,o)});
+    });
+  });
+  /* 늘곰을 누르면 쉬는 모습을 보여 준다 */
+  var REST_SAY={apple:'사과 한 입. 아삭.',honey:'꿀 한 입. 냠.',belly:'잠깐 엎드려 있을게요.',nap:'5분만 누워 있을게요.',back:'천장이 참 높네요.',med:'숨 한 번 고르는 중.',bird:'새가 앉았어요. 쉿.'};
+  function act(name,ms,text){target=null;goal=null;setPose(name,ms);say(text,2400)}
+  /* 바로 가기: 누르면 그 물건으로 걸어가서 창을 연다 */
+  Array.prototype.forEach.call(document.querySelectorAll('[data-go]'),function(b){
+    b.addEventListener('click',function(){
+      var k=b.dataset.go, o=document.querySelector('.obj[data-k="'+k+'"]');ls.moved=true;save();
+      walkTo(P[k].x,P[k].y,function(){tapFx(k);setPose(POSE_AT[k]);openSheet(k,o)});
+    });
+  });
+  /* 물건을 누르는 동안 그 조각과 윤곽선이 살짝 커지고 밝아진다 */
+  function press(k,on){var a=$('pc-'+k), b=$('ln-'+k);if(a)a.classList.toggle('press',on);if(b)b.classList.toggle('press',on)}
+  function tapFx(k){press(k,true);setTimeout(function(){press(k,false)},280)}
+  Array.prototype.forEach.call(document.querySelectorAll('.obj'),function(o){
+    var k=o.dataset.k;
+    o.addEventListener('pointerdown',function(){press(k,true)});
+    ['pointerup','pointercancel','pointerleave'].forEach(function(ev){o.addEventListener(ev,function(){setTimeout(function(){press(k,false)},160)})});
+    o.addEventListener('click',function(){tapFx(k)});
+  });
+  $('edgeL').addEventListener('click',function(){ls.moved=true;save();walkTo(pos.x-PW/scale*.8,pos.y)});
+  $('edgeR').addEventListener('click',function(){ls.moved=true;save();walkTo(pos.x+PW/scale*.8,pos.y)});
+
+  /* ---------- 방 안 물건에 상태 비추기 ---------- */
+  function weekLabel(w){return w===0?'작전 준비 중':(w>WEEKS_TOTAL?'작전 종료':'작전 '+w+'주차')}
+  function renderRoom(){
+    var w=ls.week, active=w>=1&&w<=WEEKS_TOTAL, c=stampCount(), i, h='';
+    $('hudLine').textContent=weekLabel(w)+', 오늘 요원 '+S.today+'명이 다녀갔어요';
+    $('boardWeek').textContent=w===0?'준비 중':(w>WEEKS_TOTAL?'종료':w+'주차');
+    $('boardDone').hidden=!(active&&ls.stamps[w]);
+    $('dotBoard').hidden=!(active&&!ls.stamps[w]);
+    $('dotWindow').hidden=!!ls.mood[TODAY];
+    $('dotDesk').hidden=!(c>=NEED&&!ls.seenTicket);
+    $('goBoard').hidden=$('dotBoard').hidden;$('goWindow').hidden=$('dotWindow').hidden;$('goDesk').hidden=$('dotDesk').hidden;
+    $('ln-board').classList.toggle('todo',!$('dotBoard').hidden);$('ln-window').classList.toggle('todo',!$('dotWindow').hidden);$('ln-desk').classList.toggle('todo',!$('dotDesk').hidden);
+    /* 창밖 날씨 = 우리 학교에서 오늘 가장 많은 마음 날씨 */
+    var m=topMood(), tint={sun:'transparent',cloud:'#c9d2d6',rain:'#9fb3c2',storm:'#7b8696'};
+    $('skyTint').style.background=tint[m];
+    $('windowTag').textContent='창밖은 '+WX[m];
+    $('stonesTag').textContent=w<4?'작전이 끝나면 열려요':'걱정돌 '+S.stonesTotal+'개';
+    measureLabels();applyView();
+  }
+
+  /* ---------- 아래에서 올라오는 창 ---------- */
+  var sheet=$('sheet'), scrim=$('scrim'), opener=null, current=null, clockTimer=null;
+  function fill(v){$('sheetTitle').textContent=v.title;sheet.setAttribute('data-tone',v.tone||'');$('sheetBody').innerHTML=v.html;if(v.bind)v.bind()}
+  function openSheet(k,from){
+    current=k;opener=from||null;fill(VIEWS[k]());
+    sheet.scrollTop=0;sheet.classList.add('on');scrim.classList.add('on');behind(true);panFor(sheet.offsetHeight);
+    setTimeout(function(){$('sheetClose').focus({preventScroll:true})},60);
+  }
+  function refresh(){if(!current)return;var st=sheet.scrollTop;fill(VIEWS[current]());sheet.scrollTop=st;panFor(sheet.offsetHeight)}
+  function closeSheet(quiet){
+    if(!current)return;
+    var playing=$('film');if(playing){try{playing.pause()}catch(e){}}
+    current=null;clearInterval(clockTimer);sheet.classList.remove('on');scrim.classList.remove('on');behind(false);panFor(0);
+    if(opener){try{opener.focus({preventScroll:true})}catch(e){}}
+    renderRoom();
+    if(!quiet)setPose('stand',1200,'sit');
+  }
+  function behind(on){[world,document.querySelector('.hud'),document.querySelector('.acts')].forEach(function(el){if(on)el.setAttribute('inert','');else el.removeAttribute('inert')})}
+  $('sheetClose').addEventListener('click',function(){closeSheet()});
+  scrim.addEventListener('click',function(){closeSheet()});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeSheet()});
+
+  /* 영상은 종이를 눌러 창이 열릴 때만 불러온다. 소리 없이 반복하고, 움직임 줄이기 설정에서는 스스로 재생하지 않는다 */
+  function film(title,src,still,text){
+    var h='<div class="film"><video id="film" src="'+src+'" poster="'+still+'" width="752" height="560" muted loop playsinline preload="none"></video></div>'
+      +'<p>'+text+'</p><div class="row"><button class="btn primary" id="filmBtn" type="button">'+(reduce?'재생':'멈춤')+'</button></div>'
+      +'<p class="small">4초짜리 소리 없는 영상이에요.</p>';
+    return {title:title,html:h,bind:function(){
+      var v=$('film'), b=$('filmBtn');
+      function sync(){b.textContent=v.paused?'재생':'멈춤'}
+      v.addEventListener('play',sync);v.addEventListener('pause',sync);
+      b.addEventListener('click',function(){if(v.paused){var pr=v.play();if(pr&&pr.catch)pr.catch(function(){})}else v.pause()});
+      if(!reduce){var pr=v.play();if(pr&&pr.catch)pr.catch(sync)}
+    }};
+  }
+  var VIEWS={
+    board:function(){
+      var w=ls.week, title, h='<div class="note"><span class="tape" aria-hidden="true"></span>';
+      if(w===0){title='작전은 11월 23일 월요일에 시작해요';h+='<p>첫 지령은 그날 아침 학교 게시판에 붙어요. 그때까지 음악 들으며 기다려요.</p>'}
+      else if(w>WEEKS_TOTAL){title='3주 작전이 끝났어요';h+='<p>함께해 준 모든 요원, 고마워요. 보상 교환권은 책상에 그대로 있어요.</p>'}
+      else{
+        title=w+'주차 지령, '+S.weekName[w];
+        h+='<p>지령은 학교 게시판에서 확인하세요. 마쳤다면 포스터에 숨은 암호를 입력해요.</p>';
+        if(ls.stamps[w])h+='<p class="stampmark">작전 완료</p><p>당신까지 이번 주 '+S.done+'명의 요원이 작전을 마쳤어요.</p>';
+        else h+='<form class="code" id="codeForm" novalidate><label for="code">지령 암호</label><div class="row one"><input id="code" type="text" autocomplete="off" autocapitalize="off" enterkeyhint="done" placeholder="포스터에 숨은 한 단어" aria-describedby="codeMsg"><button class="btn primary" type="submit">확인</button></div></form>'
+          +'<p id="codeMsg" role="status">이번 주 작전 완료 요원 '+S.done+'명</p><p class="small">시안에서는 암호 칸에 '+DEMO_CODE+'을 넣어 보세요.</p>';
+      }
+      h+='</div>';
+      return {title:title,tone:'board',html:h,bind:function(){
+        var f=$('codeForm');if(!f)return;var input=$('code'), msg=$('codeMsg');
+        function wrong(text){msg.textContent=text;input.classList.add('bad');replay(input,'shake');input.focus()}
+        f.addEventListener('submit',function(e){
+          e.preventDefault();var v=input.value.trim();
+          if(!v){wrong('암호를 먼저 적어 주세요.');return}
+          if(v!==DEMO_CODE){wrong('암호가 달라요. 학교 게시판 포스터 구석을 다시 살펴보세요.');input.select();return}
+          ls.stamps[w]=TODAY;save();S.done++;
+          closeSheet(true);
+          /* 암호가 맞으면 만세를 하고, 책상으로 걸어가 도장이 찍힌 카드를 보여 준다 */
+          setPose('hooray',1500,'stand');say(stampCount()===NEED?'도장 '+NEED+'개! 교환권이 생겼어요.':'도장 쾅!',2400);
+          setTimeout(function(){walkTo(P.desk.x,P.desk.y,function(){setPose(POSE_AT.desk);openSheet('desk',$('oDesk'))},true)},1500);
+        });
+        input.addEventListener('input',function(){input.classList.remove('bad')});
+      }};
+    },
+    radio:function(){
+      var on=!!ls.heart[TODAY];
+      var h='<p class="artist">'+S.song.artist+'</p><p>오늘의 추천곡이에요. '+S.song.note+'</p>'
+        +'<div class="row"><button class="btn primary grow" id="playBtn" type="button">'+PLAY+'유튜브에서 듣기</button>'
+        +'<button class="btn soft like" id="heartBtn" type="button" aria-pressed="'+on+'">'+HEART+'<span>좋아요 '+S.hearts+'</span></button></div>'
+        +'<p class="small" id="playMsg" role="status">좋아요는 누가 눌렀는지 남지 않고 숫자만 올라가요.</p>';
+      return {title:S.song.title,html:h,bind:function(){
+        $('heartBtn').addEventListener('click',function(){
+          var o=!ls.heart[TODAY];if(o)ls.heart[TODAY]=true;else delete ls.heart[TODAY];save();
+          S.hearts=Math.max(0,S.hearts+(o?1:-1));refresh();replay($('heartBtn'),'hop');if(o)replay(bearImg,'wiggle');
+        });
+        $('playBtn').addEventListener('click',function(){$('playMsg').textContent='시안이라 유튜브로 넘어가지는 않아요.';replay(bearImg,'wiggle')});
+      }};
+    },
+    window:function(){
+      var mine=ls.mood[TODAY]||null, k, h='';
+      if(!mine)h+='<p>하나를 고르면 오늘 우리 학교 하늘이 보여요.</p>';
+      h+='<div class="tiles'+(mine?' shown':'')+'" id="moods" role="group" aria-label="마음 날씨 고르기">';
+      for(k in MOODS)h+='<button type="button" class="tile" data-k="'+k+'" aria-pressed="'+(k===mine)+'">'+ICON[k]+'<span>'+MOODS[k]+'</span><span class="count">'+(S.moods[k]||0)+'명</span></button>';
+      h+='</div>';
+      if(mine){
+        h+='<div class="result rise" role="status"><p class="say">'+SAY[mine]+'<br>나까지 '+S.moods[mine]+'명</p>';
+        if(mine==='rain'||mine==='storm')h+='<div class="care"><p>마음이 무거운 날엔 혼자 견디지 않아도 돼요.</p><button type="button" class="btn paper" id="toHelp">도움 전화 보기</button></div>';
+        h+='<p class="small">가장 많은 날씨가 창밖에 보여요. 마음이 바뀌면 다시 골라도 돼요.</p></div>';
+      }else h+='<p class="small">누가 골랐는지는 아무도 몰라요.</p>';
+      return {title:'오늘 내 마음 날씨는?',tone:'sage',html:h,bind:function(){
+        $('moods').addEventListener('click',function(e){
+          var b=e.target.closest('button');if(!b)return;var k=b.dataset.k, prev=ls.mood[TODAY]||null;if(prev===k)return;
+          ls.mood[TODAY]=k;save();S.moods[k]++;if(prev)S.moods[prev]=Math.max(0,S.moods[prev]-1);
+          refresh();renderRoom();
+        });
+        var t=$('toHelp');if(t)t.addEventListener('click',function(){
+          closeSheet(true);walkTo(P.phone.x,P.phone.y,function(){setPose(POSE_AT.phone);openSheet('phone',$('oPhone'))});
+        });
+      }};
+    },
+    desk:function(){
+      var w=ls.week, c=stampCount(), i, h='<div class="stamps">';
+      for(i=1;i<=WEEKS_TOTAL;i++){
+        var on=!!ls.stamps[i];
+        h+='<div class="stamp'+(on?' on':'')+(i===w&&!on?' now':'')+(on&&ls.stamps[i]===TODAY&&!ls['seen'+i]?' pop':'')+'" role="img" aria-label="'+i+'주차 '+(on?'완료':'아직')+'">'+(on?'완료':i+'주')+'</div>';
+        if(on)ls['seen'+i]=true;
+      }
+      h+='</div><p>'+(c>=WEEKS_TOTAL?'3주 모두 완료! 3주 완주 요원이에요.':c>=NEED?'도장 '+c+'개. 보상 교환권이 열렸어요. 3주를 모두 마치면 3주 완주 요원이 돼요.':'도장 '+c+'개를 모았어요. '+(NEED-c)+'개만 더 모으면 보상 교환권이 열려요.')+'</p>';
+      if(c>=NEED){
+        ls.seenTicket=true;
+        h+='<div class="voucher"><p class="word">보상 교환권, 도장 '+c+'개</p><p class="clock" id="clock">--:--:--</p>'
+          +'<div class="daily"><span class="swatch" style="background:'+S.color+'"></span><div><p class="word">'+S.word+'</p><p class="small">오늘의 색 '+S.colorName+', 오늘의 단어</p></div></div>'
+          +'<p>이 화면을 선생님께 보여 주세요. 시계가 움직이고 오늘의 색과 단어가 맞아야 진짜예요.</p>'
+          +'<p class="small">선생님 확인 칸과 교환 완료 버튼은 이 시안에서 뺐어요.</p></div>';
+      }
+      save();
+      return {title:'요원 도장 카드',html:h,bind:function(){
+        var cl=$('clock');if(!cl)return;
+        var f=function(){var d=new Date();cl.textContent=z(d.getHours())+':'+z(d.getMinutes())+':'+z(d.getSeconds())};
+        f();clearInterval(clockTimer);clockTimer=setInterval(f,500);
+      }};
+    },
+    stones:function(){
+      var did=ls.stone===TODAY;
+      var h='<p>걱정돌을 만들었다면 눌러 주세요. 오늘 태어난 걱정돌 '+S.stonesToday+'개, 지금까지 '+S.stonesTotal+'개.</p>'
+        +'<div class="row"><button class="btn primary" id="stoneBtn" type="button"'+(did?' disabled':'')+'>내 걱정돌도 태어났어요</button></div>'
+        +(did?'<p role="status">오늘은 이미 올렸어요.</p>':'')
+        +'<p class="small">돌탑은 우리 학교 요원들이 함께 쌓아요. 누구의 돌인지는 남지 않아요.</p>';
+      return {title:'우리 걱정돌 탑',html:h,bind:function(){
+        $('stoneBtn').addEventListener('click',function(){
+          ls.stone=TODAY;save();S.stonesToday++;S.stonesTotal++;closeSheet(true);replay($('oStones'),'hop');
+          setPose('hooray',1400,'sit');say('돌 하나 올렸어요.',2400);
+        });
+      }};
+    },
+    phone:function(){
+      /* 배포된 학생 화면과 같은 기준: 1388 은 휴대전화에서 지역번호가 필요해 번호만 보여 주고, 109 만 누르면 걸린다 */
+      var h='<ul class="lines"><li><div class="place"><span>청소년상담 전화<br><span class="small">휴대전화는 지역번호 + 1388</span></span><span class="num">1388</span></div></li>'
+        +'<li><a href="tel:109"><span>자살예방상담 전화<br><span class="small">누르면 전화가 걸려요</span></span><span class="num">109</span></a></li>'
+        +'<li><div class="place"><span>Wee클래스</span><span>학교 상담실</span></div></li></ul>'
+        +'<p class="small">누가 눌렀는지는 어디에도 남지 않아요.</p>';
+      return {title:'혼자 감당하기 힘들\u00a0땐 본부에 연락하세요',tone:'ink',html:h};
+    },
+    poster:function(){
+      return {title:'오늘도 내일도 우리 모두, 그냥 룰루랄라',html:'<img class="poster" src="img/card.jpg" alt="헤드폰을 쓰고 춤추는 늘곰이 그려진 룰루랄라 카드" width="900" height="1260">'};
+    },
+    clip3d:function(){return film('넘어진 김에 쉬어 가기, 인형 편','media/neulgom-plush.mp4','img/film-plush.webp','병아리를 밟지 않으려다 발라당. 일어나지 않고 그대로 쉬어 갑니다.')},
+    clip2d:function(){return film('넘어진 김에 쉬어 가기, 색연필 편','media/neulgom-pencil.mp4','img/film-pencil.webp','걷다가 미끄러져 벌러덩. 일어나지 않고 그대로 낮잠을 잡니다.')},
+    info:function(){
+      var w=ls.week, seg='';
+      [0,1,2,3,4].forEach(function(i){seg+='<button type="button" data-w="'+i+'" aria-pressed="'+(i===w)+'">'+(i===0?'준비':(i>WEEKS_TOTAL?'종료':i+'주'))+'</button>'});
+      var h='<ul class="plain"><li>바닥을 누르면 늘곰이 그곳으로 걸어가요.</li><li>흰 선이 둘러진 물건(암호판, 창문, 책상, 라디오, 전화)을 누르면 그 앞으로 가서 열어요.</li><li>방이 옆으로 길어요. 양옆의 화살표를 누르면 그쪽으로 걸어가요.</li><li>아래의 지령, 날씨, 도장, 곡, 도움을 누르면 그 물건으로 바로 가요. 빨간 점은 아직 안 한 일이에요.</li><li>벽의 지도 게시판에 붙은 종이 세 장도 눌러 보세요. 포스터와 영상 두 편이 있어요.</li><li>늘곰을 누르면 쉬는 모습을 보여 줘요.</li><li>바닥의 발자국은 오늘 다녀간 다른 요원들의 흔적이에요.</li></ul>'
+        +'<p class="small">이 화면은 이름, 학번, 위치를 저장하지 않아요. 도장은 이 휴대폰에만 남아요.</p>'
+        +'<div class="demo"><p class="word">시안 설정</p><p class="small">몇 주차 화면인지 바꿔 볼 수 있어요. 숫자와 곡은 모두 예시이고, 여기서 누른 것은 본부 시트에 쌓이지 않아요.</p>'
+        +'<div class="seg" id="seg" role="group" aria-label="주차 고르기">'+seg+'</div><div class="row"><button class="btn paper" id="resetBtn" type="button">시안 기록 지우기</button></div></div>';
+      return {title:'이 방을 쓰는 법',html:h,bind:function(){
+        $('seg').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;ls.week=+b.dataset.w;save();refresh();renderRoom()});
+        $('resetBtn').addEventListener('click',function(){
+          try{localStorage.removeItem(KEY)}catch(e){}
+          ls={};defaults();seed();closeSheet(true);pos={x:P.start.x,y:P.start.y};target=null;cam=camFor();applyView();setPose('sit');renderRoom();drawPaws();say('처음으로 돌아왔어요.',2200);
+        });
+      }};
+    }
+  };
+  $('infoBtn').addEventListener('click',function(){openSheet('info',this)});
+
+  /* ---------- 시작 ---------- */
+  phone.addEventListener('scroll',function(){phone.scrollTop=0;phone.scrollLeft=0});      /* 방은 밀려 올라가지 않는다 */
+  layout();renderRoom();
+  window.addEventListener('resize',function(){layout();renderRoom()});
+  if(window.ResizeObserver)new ResizeObserver(function(){if(phone.clientWidth!==PW||Math.abs(phone.clientHeight/WH-scale)>.001){layout();renderRoom()}}).observe(phone);
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){measureLabels();applyView()});
+  setTimeout(function(){world.classList.add('live')},400);
+  requestAnimationFrame(function(t){last=t;lastInput=t;tick(t)});
+  setTimeout(function(){
+    say('어서 와요. 오늘 '+S.today+'번째 요원이에요.',3200);
+    if(!ls.moved)setTimeout(function(){if(!target&&!current)say('바닥이나 물건을 눌러 보세요. 방이 옆으로 길어요.',4600)},3600);
+  },500);
+})();
+</script>
+
+</body>
+</html>
