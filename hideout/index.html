@@ -275,7 +275,7 @@ button{-webkit-tap-highlight-color:transparent;cursor:pointer}
         <div class="bear idle" id="bear">
           <div class="scale" id="bearScale">
             <div class="ground" id="bearShadow"></div>
-            <div class="flip" id="bearFlip"><img id="bearImg" src="img/sit.webp" alt="" draggable="false"></div>
+            <div class="flip" id="bearFlip"><img id="bearImg" src="img/stand.webp" alt="" draggable="false"></div>
             <div class="bubble" id="bubble" role="status"></div>
           </div>
         </div>
@@ -321,7 +321,7 @@ button{-webkit-tap-highlight-color:transparent;cursor:pointer}
       <li>누를 수 있는 물건에는 흰 윤곽선이 둘러져 있고, 이름은 물건 옆에 손글씨로 적혀 있습니다. 누르면 그 물건만 살짝 커지고 밝아집니다.</li>
       <li>암호판은 지령, 창문은 마음 날씨, 책상은 도장 카드, 무전기 라디오는 추천곡, 돌 받침은 걱정돌, 빨간 전화는 도움 전화입니다.</li>
       <li>지도 게시판의 종이 세 장을 따로 누를 수 있습니다. 왼쪽 쪽지는 룰루랄라 포스터, 큰 지도는 인형 영상, 아래 사진은 색연필 영상입니다. 영상은 누를 때만 불러옵니다.</li>
-      <li>곰은 새로 받은 16자세와 걷는 그림을 씁니다.</li>
+      <li>곰은 새로 받은 그림을 씁니다. 옆으로 걷기 네 장, 앞으로·뒤로 걷기, 물건마다 다른 동작(쌍안경, 돋보기, 도장, 헤드폰, 수화기, 돌 들기), 인사·갸웃·하품·두리번거리기가 있습니다.</li>
     </ul>
     <h3>정해야 할 것</h3>
     <ul>
@@ -351,9 +351,10 @@ button{-webkit-tap-highlight-color:transparent;cursor:pointer}
   var PLAY='<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M7 4.5v15l12-7.5z" fill="currentColor"/></svg>';
   var HEART='<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
   /* 곰 그림: [가로, 세로] (그림 픽셀). 화면에는 K 배로 줄여 쓴다 */
-  var SPR={"stand":[195,217],"apple":[166,197],"back":[250,123],"belly":[238,115],"bird":[169,221],"front1":[183,225],"front2":[160,202],"honey":[172,193],"hooray":[196,214],"med":[163,197],"nap":[237,154],"read":[231,164],"sit":[184,204],"walk1":[158,230],"walk2":[180,199],"walk3":[160,197]};
-  var POSE_AT={board:'read',window:'stand',radio:'belly',desk:'apple',stones:'med',phone:'stand',poster:'stand',clip3d:'stand',clip2d:'stand'};
-  var REST=['apple','honey','belly','nap','back','med','bird'];
+  /* 곰 그림: [가로, 세로, 배율]. 새로 받은 그림은 기존 곰과 키가 같아지게 배율을 따로 둔다 */
+  var SPR={"apple":[166,197],"back":[250,123],"belly":[238,115],"bird":[169,221],"honey":[172,193],"med":[163,197],"nap":[237,154],"read":[231,164],"sit":[184,204],"b1":[146,205,1.05],"b2":[147,205,1.05],"backstand":[151,214,1.05],"binoc":[156,217,1.05],"crossed":[119,207,1.05],"f1":[126,205,1.05],"f2":[139,207,1.05],"headphone":[153,222,1.05],"hooray":[268,366,0.62],"lookl":[207,360,0.62],"lookr":[207,360,0.62],"mag":[165,217,1.05],"phone":[117,206,1.05],"stamp":[165,190,1.05],"stand":[149,218,1.05],"stone":[135,208,1.05],"tilt":[299,374,0.62],"w1":[151,217,1.05],"w2":[132,217,1.05],"w3":[136,216,1.05],"w4":[152,217,1.05],"wave":[289,366,0.62],"yawn":[233,368,0.62]};
+  var POSE_AT={board:'mag',window:'binoc',radio:'headphone',desk:'stamp',stones:'stone',phone:'phone',poster:'crossed',clip3d:'crossed',clip2d:'crossed'};
+  var REST=['apple','honey','belly','nap','back','med','bird','sit','read'];
   var WX={sun:'맑음',cloud:'구름',rain:'비',storm:'번개'};
   var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
   function replay(el,cls){el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls)}
@@ -396,7 +397,7 @@ button{-webkit-tap-highlight-color:transparent;cursor:pointer}
     scale=ph/WH;
     P={minX:70,maxX:1450,minY:500,maxY:800,
       window:{x:330,y:752},desk:{x:410,y:765},board:{x:575,y:525},poster:{x:870,y:525},clip3d:{x:960,y:525},clip2d:{x:940,y:532},
-      radio:{x:1262,y:580},stones:{x:1262,y:612},phone:{x:1380,y:775},start:{x:550,y:612}};
+      radio:{x:1182,y:642},stones:{x:1278,y:652},phone:{x:1380,y:775},start:{x:550,y:612}};
     P.start.x=Math.min(550,346+(PW/2-16)/scale);      /* 처음에는 암호판과 그 글자가 다 보이는 자리 */
     if(!pos)pos={x:P.start.x,y:P.start.y};
     pos=fit(pos);cam=camFor();measureLabels();applyView();
@@ -427,11 +428,11 @@ button{-webkit-tap-highlight-color:transparent;cursor:pointer}
 
   /* ---------- 늘곰 ---------- */
   var bear=$('bear'), bearImg=$('bearImg'), flipEl=$('bearFlip'), shadow=$('bearShadow'), bubble=$('bubble');
-  var target=null, goal=null, dir=1, pose='sit', poseTimer=null, cur='', step=0, stepT=0, lastInput=0, resting=false, SPEED=330;
+  var target=null, goal=null, dir=1, pose='stand', poseTimer=null, cur='', step=0, stepT=0, lastInput=0, lastLook=0, resting=false, SPEED=330;
   Object.keys(SPR).forEach(function(n){var i=new Image();i.src='img/'+n+'.webp'});      /* 그림 미리 불러오기 */
   function show(name,flip){
     if(name!==cur){
-      cur=name;var w=SPR[name][0]*K, h=SPR[name][1]*K;
+      cur=name;var q=K*(SPR[name][2]||1), w=SPR[name][0]*q, h=SPR[name][1]*q;
       bearImg.setAttribute('src','img/'+name+'.webp');
       bearImg.style.width=w+'px';bearImg.style.height=h+'px';bearImg.style.left=(-w/2)+'px';bearImg.style.top=(4-h)+'px';
       shadow.style.width=(w*.8)+'px';shadow.style.left=(-w*.4)+'px';bubble.style.bottom=(h+16)+'px';
@@ -443,13 +444,13 @@ button{-webkit-tap-highlight-color:transparent;cursor:pointer}
     var s=0.8+0.36*((pos.y-P.minY)/Math.max(1,P.maxY-P.minY));
     $('bearScale').style.transform='scale('+s.toFixed(3)+')';
     if(!target)show(pose,1);
-    var cls='bear '+(target?'walk':(pose==='sit'||pose==='stand'?'idle':'act'));
+    var cls='bear '+(target?'walk':(pose==='stand'?'idle':'act'));
     if(bear.className!==cls)bear.className=cls;
     var vx=pos.x*scale-cam, shift=(clamp(vx,128,PW-128)-vx)/scale;bubble.style.marginLeft=(shift/s)+'px';
   }
   function setPose(name,ms,after){
     clearTimeout(poseTimer);pose=name;resting=false;
-    if(ms)poseTimer=setTimeout(function(){pose=after||'sit';drawBear()},ms);
+    if(ms)poseTimer=setTimeout(function(){pose=after||'stand';drawBear()},ms);
     if(pos)drawBear();
   }
   function walkTo(x,y,then,keepBubble){
@@ -461,7 +462,7 @@ button{-webkit-tap-highlight-color:transparent;cursor:pointer}
     if(reduce){pos={x:target.x,y:target.y};target=null;cam=camFor();applyView();arrive();return}
     drawBear();
   }
-  function arrive(){var g=goal;goal=null;if(g)g();else setPose('stand',1500,'sit');drawBear()}
+  function arrive(){var g=goal;goal=null;if(g)g();else setPose('stand');drawBear()}
   var last=0;
   function tick(t){
     var dt=Math.min(.05,(t-last)/1000);last=t;
@@ -471,13 +472,19 @@ button{-webkit-tap-highlight-color:transparent;cursor:pointer}
       else{
         pos.x+=dx/d*st;pos.y+=dy/d*st;stepT+=dt;if(stepT>.17){stepT=0;step=(step+1)%4}
         drawBear();
-        if(Math.abs(dx)>=Math.abs(dy)*.8)show(['walk1','walk2','walk3','walk2'][step],dir);          /* 옆으로 걷기 */
-        else show(step%2?'front1':'front2',step>1?-1:1);                            /* 앞뒤로 걷기 */
+        if(Math.abs(dx)>=Math.abs(dy)*.8)show(['w1','w2','w3','w4'][step],-dir);          /* 옆으로 걷기: 그림은 왼쪽을 보고 있어서 오른쪽으로 갈 때 뒤집는다 */
+        else show(dy<0?(step%2?'b1':'b2'):(step%2?'f1':'f2'),1);                    /* 방 안쪽으로 갈 때는 뒷모습, 앞으로 올 때는 앞모습 */
       }
-    }else if(!current&&!resting&&pose==='sit'&&t-lastInput>14000){
-      /* 한동안 가만히 두면 알아서 쉰다 */
-      resting=true;pose=REST[Math.floor(Math.random()*REST.length)];drawBear();
-      poseTimer=setTimeout(function(){if(resting){resting=false;pose='sit';lastInput=performance.now();drawBear()}},6500);
+    }else if(!current&&!resting&&pose==='stand'&&t-lastInput>14000){
+      /* 한동안 가만히 두면 하품을 하고 알아서 쉰다 */
+      resting=true;pose='yawn';drawBear();
+      poseTimer=setTimeout(function(){
+        if(!resting)return;pose=REST[Math.floor(Math.random()*REST.length)];drawBear();
+        poseTimer=setTimeout(function(){if(resting){resting=false;pose='stand';lastInput=performance.now();drawBear()}},6500);
+      },1500);
+    }else if(!current&&!resting&&pose==='stand'&&t-lastInput>2600&&t-lastLook>5200){
+      /* 가만히 서 있을 때는 가끔 두리번거린다 */
+      lastLook=t;if(!reduce)setPose(Math.random()<.5?'lookl':'lookr',900,'stand');
     }
     /* 방이 늘곰을 따라 옆으로 움직인다 */
     var want=camFor();if(Math.abs(want-cam)>.4){cam+=(want-cam)*Math.min(1,dt*7);applyView()}
@@ -506,7 +513,7 @@ button{-webkit-tap-highlight-color:transparent;cursor:pointer}
   Array.prototype.forEach.call(document.querySelectorAll('.obj'),function(o){
     o.addEventListener('click',function(){
       var k=o.dataset.k, p=P[k];ls.moved=true;save();
-      if(k==='stones'&&ls.week<4){walkTo(p.x,p.y,function(){setPose('sit');say('걱정돌은 작전이 끝나면 열려요.')});return}
+      if(k==='stones'&&ls.week<4){walkTo(p.x,p.y,function(){setPose('tilt',2200,'stand');say('걱정돌은 작전이 끝나면 열려요.')});return}
       walkTo(p.x,p.y,function(){setPose(POSE_AT[k]);openSheet(k,o)});
     });
   });
@@ -567,7 +574,7 @@ button{-webkit-tap-highlight-color:transparent;cursor:pointer}
     current=null;clearInterval(clockTimer);sheet.classList.remove('on');scrim.classList.remove('on');behind(false);panFor(0);
     if(opener){try{opener.focus({preventScroll:true})}catch(e){}}
     renderRoom();
-    if(!quiet)setPose('stand',1200,'sit');
+    if(!quiet)setPose('stand');
   }
   function behind(on){[world,document.querySelector('.hud'),document.querySelector('.acts')].forEach(function(el){if(on)el.setAttribute('inert','');else el.removeAttribute('inert')})}
   $('sheetClose').addEventListener('click',function(){closeSheet()});
@@ -602,7 +609,7 @@ button{-webkit-tap-highlight-color:transparent;cursor:pointer}
       h+='</div>';
       return {title:title,tone:'board',html:h,bind:function(){
         var f=$('codeForm');if(!f)return;var input=$('code'), msg=$('codeMsg');
-        function wrong(text){msg.textContent=text;input.classList.add('bad');replay(input,'shake');input.focus()}
+        function wrong(text){msg.textContent=text;input.classList.add('bad');replay(input,'shake');input.focus();setPose('tilt',1600,POSE_AT.board)}
         f.addEventListener('submit',function(e){
           e.preventDefault();var v=input.value.trim();
           if(!v){wrong('암호를 먼저 적어 주세요.');return}
@@ -683,7 +690,7 @@ button{-webkit-tap-highlight-color:transparent;cursor:pointer}
       return {title:'우리 걱정돌 탑',html:h,bind:function(){
         $('stoneBtn').addEventListener('click',function(){
           ls.stone=TODAY;save();S.stonesToday++;S.stonesTotal++;closeSheet(true);replay($('oStones'),'hop');
-          setPose('hooray',1400,'sit');say('돌 하나 올렸어요.',2400);
+          setPose('hooray',1400,'stand');say('돌 하나 올렸어요.',2400);
         });
       }};
     },
@@ -711,7 +718,7 @@ button{-webkit-tap-highlight-color:transparent;cursor:pointer}
         $('seg').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;ls.week=+b.dataset.w;save();refresh();renderRoom()});
         $('resetBtn').addEventListener('click',function(){
           try{localStorage.removeItem(KEY)}catch(e){}
-          ls={};defaults();seed();closeSheet(true);pos={x:P.start.x,y:P.start.y};target=null;cam=camFor();applyView();setPose('sit');renderRoom();drawPaws();say('처음으로 돌아왔어요.',2200);
+          ls={};defaults();seed();closeSheet(true);pos={x:P.start.x,y:P.start.y};target=null;cam=camFor();applyView();setPose('stand');renderRoom();drawPaws();say('처음으로 돌아왔어요.',2200);
         });
       }};
     }
@@ -727,7 +734,7 @@ button{-webkit-tap-highlight-color:transparent;cursor:pointer}
   setTimeout(function(){world.classList.add('live')},400);
   requestAnimationFrame(function(t){last=t;lastInput=t;tick(t)});
   setTimeout(function(){
-    say('어서 와요. 오늘 '+S.today+'번째 요원이에요.',3200);
+    setPose('wave',2800,'stand');say('어서 와요. 오늘 '+S.today+'번째 요원이에요.',3200);
     if(!ls.moved)setTimeout(function(){if(!target&&!current)say('바닥이나 물건을 눌러 보세요. 방이 옆으로 길어요.',4600)},3600);
   },500);
 })();
