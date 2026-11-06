@@ -113,7 +113,7 @@ input[type=text],input[type=password]{border:1px solid var(--line);background:va
 .bad{color:var(--seal);font-size:14px}
 
 /* 도장 */
-.stamps{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.stamps{display:grid;grid-template-columns:repeat(3,minmax(0,84px));justify-content:center;gap:16px}
 .stamp{aspect-ratio:1;border:2px dashed var(--line);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.1;background:var(--bg);overflow:hidden}
 .stamp.on{border:2px solid var(--seal);color:var(--ink);box-shadow:inset 0 0 0 2px var(--bg),inset 0 0 0 3px var(--seal)}
 .stamp.on:nth-child(odd){transform:rotate(-7deg)}
@@ -209,15 +209,15 @@ input[type=text],input[type=password]{border:1px solid var(--line);background:va
 
   <!-- 도장 카드 -->
   <section class="card" id="stampCard" aria-label="요원 도장 카드">
-    <div class="band"><b aria-hidden="true">요 원 증</b><span id="bandStamps">도장 0 / 5</span></div>
+    <div class="band"><b aria-hidden="true">요 원 증</b><span id="bandStamps">도장 0 / 3</span></div>
     <div class="stamps" id="stamps"></div>
     <p class="note" id="stampMsg" style="font-size:13.5px"></p>
   </section>
 
   <!-- 보상 교환권 -->
   <section class="voucher hide" id="voucher" aria-label="보상 교환권">
-    <div class="band"><b id="bandVoucher">보상 교환권</b><span id="bandVoucherN">도장 3개</span></div>
-    <span class="badge hide" id="finisher">★ 5주 완주 요원</span>
+    <div class="band"><b id="bandVoucher">보상 교환권</b><span id="bandVoucherN">도장 2개</span></div>
+    <span class="badge hide" id="finisher">★ 3주 완주 요원</span>
     <div class="clock" id="clock">--:--:--</div>
     <div class="daily"><div class="swatch" id="swatch"></div><div><div class="word" id="word">…</div><div class="cap" style="font-size:12px;color:var(--muted)" id="dailyCap">오늘의 색과 단어</div></div></div>
     <p class="note" id="voucherNote">이 화면을 선생님께 보여 주세요. 시계가 움직이고 오늘의 색과 단어가 맞아야 진짜예요.</p>
@@ -293,7 +293,7 @@ input[type=text],input[type=password]{border:1px solid var(--line);background:va
   var API = (window.NG_API||'').trim();
   var $ = function(id){ return document.getElementById(id); };
   var MOODS = {sun:'맑음', cloud:'구름', rain:'비', storm:'번개'};
-  var WEEKS_TOTAL = 5, NEED = 3;
+  var WEEKS_TOTAL = 3, NEED = 2;   // 작전 3주, 도장 2개부터 보상 교환권 (2026-11-06 결정)
 
   /* ---------- 이 휴대폰에만 남는 기록 ---------- */
   var KEY = 'neulgom-v1';
@@ -390,7 +390,7 @@ input[type=text],input[type=password]{border:1px solid var(--line);background:va
       $('codeForm').classList.add('hide'); $('codeMsg').classList.add('hide');
     } else if(w>WEEKS_TOTAL){
       $('bandNo').textContent = '작전 종료'; $('dday').classList.add('hide');
-      $('missionName').textContent='5주 작전이 끝났어요';
+      $('missionName').textContent=WEEKS_TOTAL+'주 작전이 끝났어요';
       $('missionDesc').textContent='함께해 준 모든 요원, 고마워요. 보상 교환권은 아래에 그대로 있어요.';
       $('codeForm').classList.add('hide'); $('codeMsg').classList.add('hide');
     } else {
@@ -415,8 +415,8 @@ input[type=text],input[type=password]{border:1px solid var(--line);background:va
     renderStamps(w);
     renderVoucher(s);
 
-    // 걱정돌 (4주차부터)
-    if(w>=4){
+    // 걱정돌 (작전이 끝난 다음 주, 원데이 클래스 주부터)
+    if(w>WEEKS_TOTAL){
       $('stoneCard').classList.remove('hide');
       $('stonesToday').textContent = s.stonesToday; $('stonesTotal').textContent = s.stonesTotal;
       var did = ls.stone===today;
@@ -433,7 +433,7 @@ input[type=text],input[type=password]{border:1px solid var(--line);background:va
     $('stamps').innerHTML = h;
     var c = stampCount();
     var msg;
-    if(c>=WEEKS_TOTAL) msg = '5주 모두 완료! 전설의 완주 요원이에요.';
+    if(c>=WEEKS_TOTAL) msg = WEEKS_TOTAL+'주 모두 완료! 전설의 완주 요원이에요.';
     else if(c>=NEED) msg = '도장 '+c+'개. 보상 교환권이 열렸어요! 끝까지 가면 완주 요원 배지도 받아요.';
     else msg = '도장 '+c+'개 모았어요. '+(NEED-c)+'개만 더 모으면 보상 교환권이 열려요.';
     $('stampMsg').textContent = msg;
@@ -539,7 +539,6 @@ input[type=text],input[type=password]{border:1px solid var(--line);background:va
       if(first){ ls.visit = s.date; save(); s.today = (s.today||0)+1; s.total=(s.total||0)+1; }
       render(s);
       if(first) post({a:'visit'}).then(render).catch(function(){});
-      // 5주 완주면 도장 5개 상태를 서버에 숫자로만 알림 (익명 합계)
     }).catch(function(){
       banner('본부와 연결이 안 돼요. 와이파이나 데이터를 확인하고 새로고침해 주세요.');
       $('dateLine').textContent='연결 안 됨';
