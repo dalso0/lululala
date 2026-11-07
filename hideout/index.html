@@ -352,8 +352,9 @@ button{-webkit-tap-highlight-color:transparent;cursor:pointer}
   var HEART='<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
   /* 곰 그림: [가로, 세로] (그림 픽셀). 화면에는 K 배로 줄여 쓴다 */
   /* 곰 그림: [가로, 세로, 배율]. 새로 받은 그림은 기존 곰과 키가 같아지게 배율을 따로 둔다 */
-  var SPR={"apple":[166,197],"back":[250,123],"belly":[238,115],"bird":[169,221],"honey":[172,193],"med":[163,197],"nap":[237,154],"read":[231,164],"sit":[184,204],"b1":[146,205,1.05],"b2":[147,205,1.05],"backstand":[151,214,1.05],"binoc":[156,217,1.05],"crossed":[119,207,1.05],"f1":[126,205,1.05],"f2":[139,207,1.05],"headphone":[153,222,1.05],"hooray":[268,366,0.62],"lookl":[207,360,0.62],"lookr":[207,360,0.62],"mag":[165,217,1.05],"phone":[117,206,1.05],"stamp":[165,190,1.05],"stand":[149,218,1.05],"stone":[135,208,1.05],"tilt":[299,374,0.62],"w1":[151,217,1.05],"w2":[132,217,1.05],"w3":[136,216,1.05],"w4":[152,217,1.05],"wave":[289,366,0.62],"yawn":[233,368,0.62]};
+  var SPR={"apple":[166,197],"back":[250,123],"belly":[238,115],"bird":[169,221],"honey":[172,193],"med":[163,197],"nap":[237,154],"read":[231,164],"sit":[184,204],"b1":[206,307,0.71],"backstand":[151,214,1.05],"binoc":[156,217,1.05],"crossed":[119,207,1.05],"f1":[218,311,0.7],"f2":[225,312,0.7],"headphone":[153,222,1.05],"hooray":[268,366,0.62],"lookl":[207,360,0.62],"lookr":[207,360,0.62],"mag":[165,217,1.05],"phone":[117,206,1.05],"stamp":[544,775,0.34],"stand":[149,218,1.05],"stone":[135,208,1.05],"tilt":[299,374,0.62],"w1":[243,357,0.64],"w2":[225,358,0.64],"w3":[246,356,0.64],"w4":[219,357,0.64],"wave":[289,366,0.62],"yawn":[233,368,0.62]};
   var POSE_AT={board:'mag',window:'binoc',radio:'headphone',desk:'stamp',stones:'stone',phone:'phone',poster:'crossed',clip3d:'crossed',clip2d:'crossed'};
+  var FLIP={stamp:-1};      /* 도장 곰은 오른쪽을 보고 그려져 있어서, 왼쪽에 있는 책상을 향하게 뒤집는다 */
   var REST=['apple','honey','belly','nap','back','med','bird','sit','read'];
   var WX={sun:'맑음',cloud:'구름',rain:'비',storm:'번개'};
   var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -396,7 +397,7 @@ button{-webkit-tap-highlight-color:transparent;cursor:pointer}
     PW=phone.clientWidth;var ph=phone.clientHeight;
     scale=ph/WH;
     P={minX:70,maxX:1450,minY:500,maxY:800,
-      window:{x:330,y:752},desk:{x:410,y:765},board:{x:575,y:525},poster:{x:870,y:525},clip3d:{x:960,y:525},clip2d:{x:940,y:532},
+      window:{x:330,y:752},desk:{x:472,y:640},board:{x:575,y:525},poster:{x:870,y:525},clip3d:{x:960,y:525},clip2d:{x:940,y:532},
       radio:{x:1182,y:642},stones:{x:1278,y:652},phone:{x:1380,y:775},start:{x:550,y:612}};
     P.start.x=Math.min(550,346+(PW/2-16)/scale);      /* 처음에는 암호판과 그 글자가 다 보이는 자리 */
     if(!pos)pos={x:P.start.x,y:P.start.y};
@@ -443,7 +444,7 @@ button{-webkit-tap-highlight-color:transparent;cursor:pointer}
     bear.style.left=pos.x+'px';bear.style.top=pos.y+'px';bear.style.zIndex=bubble.classList.contains('on')?1600:Math.round(pos.y);      /* 말하는 동안에는 말풍선이 이름표보다 위 */
     var s=0.8+0.36*((pos.y-P.minY)/Math.max(1,P.maxY-P.minY));
     $('bearScale').style.transform='scale('+s.toFixed(3)+')';
-    if(!target)show(pose,1);
+    if(!target)show(pose,FLIP[pose]||1);
     var cls='bear '+(target?'walk':(pose==='stand'?'idle':'act'));
     if(bear.className!==cls)bear.className=cls;
     var vx=pos.x*scale-cam, shift=(clamp(vx,128,PW-128)-vx)/scale;bubble.style.marginLeft=(shift/s)+'px';
@@ -472,8 +473,9 @@ button{-webkit-tap-highlight-color:transparent;cursor:pointer}
       else{
         pos.x+=dx/d*st;pos.y+=dy/d*st;stepT+=dt;if(stepT>.17){stepT=0;step=(step+1)%4}
         drawBear();
-        if(Math.abs(dx)>=Math.abs(dy)*.8)show(['w1','w2','w3','w4'][step],-dir);          /* 옆으로 걷기: 그림은 왼쪽을 보고 있어서 오른쪽으로 갈 때 뒤집는다 */
-        else show(dy<0?(step%2?'b1':'b2'):(step%2?'f1':'f2'),1);                    /* 방 안쪽으로 갈 때는 뒷모습, 앞으로 올 때는 앞모습 */
+        if(Math.abs(dx)>=Math.abs(dy)*.8)show(['w1','w2','w3','w4'][step],dir);           /* 옆으로 걷기: 그림은 오른쪽을 보고 있어서 왼쪽으로 갈 때 뒤집는다 */
+        else if(dy<0)show('b1',step%2?-1:1);                                        /* 방 안쪽으로 갈 때는 뒷모습: 한 장을 좌우로 뒤집어 두 걸음을 만든다 */
+        else show(step%2?'f1':'f2',1);                                              /* 앞으로 올 때는 앞모습 */
       }
     }else if(!current&&!resting&&pose==='stand'&&t-lastInput>14000){
       /* 한동안 가만히 두면 하품을 하고 알아서 쉰다 */
